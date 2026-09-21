@@ -54,7 +54,10 @@ async def serve_index():
     """Serve the single-page application dashboard."""
     index_file = STATIC_DIR / "index.html"
     if index_file.exists():
-        return FileResponse(str(index_file))
+        return FileResponse(
+            str(index_file),
+            headers={"Cache-Control": "no-cache, no-store, must-revalidate"}
+        )
     return HTMLResponse("<h1>GPL Tracker</h1><p>Frontend em carregamento...</p>")
 
 
