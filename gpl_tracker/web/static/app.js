@@ -19,50 +19,49 @@ async function initApp() {
 
 function setupEventListeners() {
   // Modal openers
-  document.getElementById("btn-open-refueling").addEventListener("click", () => openRefuelingModal());
-  document.getElementById("btn-quick-repeat").addEventListener("click", () => repeatLastRefueling());
-  document.getElementById("btn-open-settings").addEventListener("click", () => openSettingsModal());
+  document.getElementById("btn-open-refueling")?.addEventListener("click", () => openRefuelingModal());
+  document.getElementById("btn-open-settings")?.addEventListener("click", () => openSettingsModal());
 
   // Modal closers
-  document.getElementById("btn-close-modal").addEventListener("click", closeRefuelingModal);
-  document.getElementById("btn-cancel-refueling").addEventListener("click", closeRefuelingModal);
-  document.getElementById("btn-close-settings").addEventListener("click", closeSettingsModal);
-  document.getElementById("btn-cancel-settings").addEventListener("click", closeSettingsModal);
+  document.getElementById("btn-close-modal")?.addEventListener("click", closeRefuelingModal);
+  document.getElementById("btn-cancel-refueling")?.addEventListener("click", closeRefuelingModal);
+  document.getElementById("btn-close-settings")?.addEventListener("click", closeSettingsModal);
+  document.getElementById("btn-cancel-settings")?.addEventListener("click", closeSettingsModal);
 
   // Close modals on backdrop click
-  document.getElementById("modal-refueling").addEventListener("click", (e) => {
+  document.getElementById("modal-refueling")?.addEventListener("click", (e) => {
     if (e.target.id === "modal-refueling") closeRefuelingModal();
   });
-  document.getElementById("modal-settings").addEventListener("click", (e) => {
+  document.getElementById("modal-settings")?.addEventListener("click", (e) => {
     if (e.target.id === "modal-settings") closeSettingsModal();
   });
 
   // Station search and picker
   let searchDebounceTimer = null;
-  document.getElementById("form-station-search").addEventListener("input", () => {
+  document.getElementById("form-station-search")?.addEventListener("input", () => {
     clearTimeout(searchDebounceTimer);
     searchDebounceTimer = setTimeout(triggerLiveStationSearch, 150);
   });
-  document.getElementById("form-station-concelho").addEventListener("change", triggerLiveStationSearch);
-  document.getElementById("btn-change-station").addEventListener("click", showStationPicker);
-  document.getElementById("btn-toggle-fav-selected").addEventListener("click", toggleSelectedStationFav);
+  document.getElementById("form-station-concelho")?.addEventListener("change", triggerLiveStationSearch);
+  document.getElementById("btn-change-station")?.addEventListener("click", showStationPicker);
+  document.getElementById("btn-toggle-fav-selected")?.addEventListener("click", toggleSelectedStationFav);
 
   // Forms
-  document.getElementById("refueling-form").addEventListener("submit", saveRefueling);
-  document.getElementById("settings-form").addEventListener("submit", saveSettings);
+  document.getElementById("refueling-form")?.addEventListener("submit", saveRefueling);
+  document.getElementById("settings-form")?.addEventListener("submit", saveSettings);
 
   // Live calculation listeners
   const liveInputs = ["form-distance", "form-amount", "form-lpg-price", "form-petrol-price"];
   liveInputs.forEach(id => {
     const el = document.getElementById(id);
-    el.addEventListener("input", updateLiveCalculations);
+    if (el) el.addEventListener("input", updateLiveCalculations);
   });
 
   // Export buttons
-  document.getElementById("btn-export-csv").addEventListener("click", () => {
+  document.getElementById("btn-export-csv")?.addEventListener("click", () => {
     window.location.href = "/api/export/csv";
   });
-  document.getElementById("btn-export-excel").addEventListener("click", () => {
+  document.getElementById("btn-export-excel")?.addEventListener("click", () => {
     window.location.href = "/api/export/excel";
   });
 }
@@ -91,9 +90,11 @@ async function loadVehicle() {
     if (currentVehicle.engine) titleParts.push(currentVehicle.engine);
     const nameStr = titleParts.join(" ") || "Veículo GPL";
 
-    document.getElementById("vehicle-sub-header").textContent =
-      `${nameStr} • Conversão: ${formatCurrency(currentVehicle.conversion_cost)} (+${currentVehicle.lpg_consumption_increase}% consumo GPL)`;
-      `${nameStr} • Investimento: ${formatCurrency(currentVehicle.conversion_cost)} (+${currentVehicle.lpg_consumption_increase}% consumo GPL)`;
+    const subHeaderEl = document.getElementById("vehicle-sub-header");
+    if (subHeaderEl) {
+      subHeaderEl.textContent =
+        `${nameStr} • Investimento: ${formatCurrency(currentVehicle.conversion_cost)} (+${currentVehicle.lpg_consumption_increase}% consumo GPL)`;
+    }
 
     // Populate settings form
     document.getElementById("set-cost").value = currentVehicle.conversion_cost;
@@ -291,11 +292,6 @@ async function checkLastRefueling() {
     if (!res.ok) return;
     lastRefuelingRecord = await res.json();
     const btnRepeat = document.getElementById("btn-quick-repeat");
-    if (lastRefuelingRecord) {
-      btnRepeat.style.display = "inline-flex";
-      btnRepeat.title = `Reutilizar posto ${lastRefuelingRecord.station_name}`;
-    } else {
-      btnRepeat.style.display = "none";
     if (btnRepeat) {
       if (lastRefuelingRecord) {
         btnRepeat.style.display = "inline-flex";
