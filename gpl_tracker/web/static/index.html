@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GPL Tracker - Contador Financeiro & ROI</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22 fill=%22%2310b981%22><text y=%2226%22 font-size=%2224%22>⛽</text></svg>">
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <div class="brand">
+        <div class="brand-icon">€</div>
+        <div class="brand-title">
+          <h1>GPL Tracker</h1>
+          <p id="vehicle-sub-header">A carregar perfil do veículo...</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-secondary btn-sm" id="btn-export-csv" title="Exportar para ficheiro CSV">
+          📥 CSV
+        </button>
+        <button class="btn btn-secondary btn-sm" id="btn-export-excel" title="Exportar para Excel (.xlsx)">
+          📊 Excel
+        </button>
+        <button class="btn btn-secondary btn-sm" id="btn-open-settings" title="Configurações do veículo e conversão">
+        <button class="btn btn-secondary btn-sm" id="btn-open-settings" title="Configurações do veículo e investimento">
+          ⚙ Definições
+        </button>
+        <button class="btn btn-secondary" id="btn-quick-repeat" title="Reutilizar último posto com preços atuais" style="display:none;">
+          ⚡ + Abasteci novamente
+        </button>
+        <button class="btn btn-primary" id="btn-open-refueling">
+          + Novo abastecimento
+        </button>
+      </div>
+    </header>
+
+    <!-- Break-Even Visual Card -->
+    <section class="break-even-card" id="break-even-section">
+      <div class="break-even-header">
+        <div class="break-even-title">
+          <span>Progresso de Recuperação do Investimento</span>
+          <span class="status-badge" id="be-status-badge">A carregar...</span>
+        </div>
+        <div id="be-main-text" style="font-size: 0.95rem; font-weight: 600; color: var(--color-accent-light);">
+          0% recuperado
+        </div>
+      </div>
+
+      <!-- Visual Graphic Bar: 0 € ──────●────── 1.500 € -->
+      <div class="progress-container">
+        <div class="progress-track">
+          <div class="progress-fill" id="be-progress-bar" style="width: 0%;"></div>
+        </div>
+        <div class="progress-labels">
+          <span>0,00 €</span>
+          <span id="be-target-label">1.500,00 € (Investimento)</span>
+        </div>
+      </div>
+
+      <!-- Break-Even Details & Projections -->
+      <div class="break-even-stats">
+        <div class="be-stat-item">
+          <span class="be-stat-label">Poupança Acumulada</span>
+          <span class="be-stat-value green" id="be-stat-savings">0,00 €</span>
+        </div>
+        <div class="be-stat-item">
+          <span class="be-stat-label" id="be-stat-remaining-label">Falta Recuperar</span>
+          <span class="be-stat-value" id="be-stat-remaining">0,00 €</span>
+        </div>
+        <div class="be-stat-item">
+          <span class="be-stat-label">Km Restantes (Est.)</span>
+          <span class="be-stat-value" id="be-stat-km-left">--</span>
+        </div>
+        <div class="be-stat-item">
+          <span class="be-stat-label">Tempo Restante (Est.)</span>
+          <span class="be-stat-value" id="be-stat-time-left">--</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Metrics Cards Grid -->
+    <section class="metrics-grid">
+      <div class="metric-card highlight">
+        <div class="metric-header">
+          <span>Poupança Total</span>
+          <span>💰</span>
+        </div>
+        <div class="metric-value green" id="metric-total-savings">0,00 €</div>
+        <div class="metric-sub" id="metric-lpg-spent">Gasto em GPL: 0,00 €</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-header">
+          <span>Poupança Média</span>
+          <span>⚡</span>
+        </div>
+        <div class="metric-value" id="metric-avg-savings-km">0,000 €/km</div>
+        <div class="metric-sub" id="metric-avg-savings-100km">0,00 € a cada 100 km</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-header">
+          <span>Km com GPL</span>
+          <span>🚗</span>
+        </div>
+        <div class="metric-value" id="metric-total-km">0 km</div>
+        <div class="metric-sub" id="metric-total-liters">0 L de GPL consumidos</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-header">
+          <span>Consumo Médio</span>
+          <span>📊</span>
+        </div>
+        <div class="metric-value" id="metric-avg-consumption">0,0 L/100km</div>
+        <div class="metric-sub" id="metric-equiv-consumption">Eq. Gasolina: 0,0 L/100km</div>
+      </div>
+    </section>
+
+    <!-- History Section -->
+    <section>
+      <div class="section-header">
+        <h2 class="section-title">Histórico de Abastecimentos</h2>
+        <span style="font-size: 0.85rem; color: var(--text-muted);" id="refuelings-count">0 registos</span>
+      </div>
+
+      <div class="table-card">
+        <table>
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Posto</th>
+              <th>Distância</th>
+              <th>Preço GPL</th>
+              <th>Preço Gasolina</th>
+              <th>Valor Pago</th>
+              <th>Litros</th>
+              <th>Consumo GPL</th>
+              <th>Consumo Gasolina Eq.</th>
+              <th>Custo Gasolina</th>
+              <th>Poupança</th>
+              <th>Acumulado</th>
+              <th>Fonte</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="refuelings-tbody">
+            <tr>
+              <td colspan="14" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                A carregar histórico de abastecimentos...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <!-- MODAL: + Novo Abastecimento / Editar -->
+  <div class="modal-overlay" id="modal-refueling">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-refueling-title">Novo Abastecimento</h3>
+        <button class="btn-icon" id="btn-close-modal" style="font-size: 1.2rem;">&times;</button>
+      </div>
+
+      <form id="refueling-form">
+        <div class="modal-body">
+          <input type="hidden" id="form-refueling-id">
+
+          <!-- Selected Station Display (Card Exato do Posto) -->
+          <div id="station-selected-container" style="display: none;">
+            <div class="station-selected-box">
+              <div class="station-selected-info">
+                <div class="station-selected-title">
+                  <span class="brand-pill" id="selected-brand-pill">POSTO</span>
+                  <span id="selected-station-name">Nome do Posto</span>
+                </div>
+                <div class="station-selected-address" id="selected-station-address">Morada completa</div>
+                <div class="station-selected-sub" id="selected-station-concelho">Concelho • Distrito</div>
+              </div>
+              <div style="display: flex; gap: 0.5rem; align-items: center;">
+                <button type="button" class="btn-icon" id="btn-toggle-fav-selected" title="Marcar/Desmarcar como favorito" style="font-size: 1.2rem;">★</button>
+                <button type="button" class="btn btn-secondary btn-sm" id="btn-change-station">Alterar</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Station Search & Selection Panel -->
+          <div id="station-picker-container">
+            <!-- Postos Habituais & Favoritos -->
+            <div class="quick-stations-wrapper">
+              <span class="quick-stations-title">Postos Habituais & Favoritos</span>
+              <div class="station-chips" id="quick-station-chips">
+                <span style="font-size: 0.78rem; color: var(--text-muted);">Sem postos frequentes ainda</span>
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 0.5rem;">
+              <label class="form-label" for="form-station-search">Identificar Posto de Abastecimento</label>
+              <div class="station-filters-bar">
+                <input type="text" class="form-input" id="form-station-search" placeholder="Escreva a marca, concelho, localidade ou morada..." autocomplete="off">
+                <select class="form-input" id="form-station-concelho">
+                  <option value="">Todos os Concelhos</option>
+                </select>
+              </div>
+
+              <!-- Live results list with exact stations -->
+              <div class="station-results-wrapper" id="station-results-list" style="margin-top: 0.4rem; display: none;">
+                <!-- Inserido dinamicamente -->
+              </div>
+            </div>
+          </div>
+
+          <input type="hidden" id="form-station-id">
+          <input type="hidden" id="form-station-name">
+
+          <!-- Data e Hora -->
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="form-date">Data e Hora</label>
+              <input type="datetime-local" class="form-input" id="form-date" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="form-odometer">Odómetro atual (km) <small style="color: var(--text-muted);">(opcional)</small></label>
+              <input type="number" class="form-input" id="form-odometer" placeholder="Ex: 145200">
+            </div>
+          </div>
+
+          <!-- Preços (Preenchidos Automaticamente) -->
+          <div class="form-row">
+            <div class="form-group">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <label class="form-label" for="form-lpg-price">Preço GPL (€/L)</label>
+                <span class="price-source-tag" id="lpg-price-tag"></span>
+              </div>
+              <input type="number" step="0.001" class="form-input" id="form-lpg-price" placeholder="0.850" required>
+            </div>
+
+            <div class="form-group">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <label class="form-label" for="form-petrol-price">Preço Gasolina 95 (€/L)</label>
+                <span class="price-source-tag" id="petrol-price-tag"></span>
+              </div>
+              <input type="number" step="0.001" class="form-input" id="form-petrol-price" placeholder="1.750" required>
+            </div>
+          </div>
+
+          <!-- CAMPOS PRINCIPAIS OBRIGATÓRIOS -->
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="form-distance" style="color: var(--color-accent-light); font-weight: 700;">
+                Km percorridos *
+              </label>
+              <input type="number" step="0.1" class="form-input" id="form-distance" placeholder="Ex: 450" required autofocus>
+              <span style="font-size: 0.72rem; color: var(--text-muted);">Distância desde o último abastecimento</span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="form-amount" style="color: var(--color-accent-light); font-weight: 700;">
+                Valor pago (€) *
+              </label>
+              <input type="number" step="0.01" class="form-input" id="form-amount" placeholder="Ex: 34.00" required>
+              <span style="font-size: 0.72rem; color: var(--text-muted);">Total da fatura em GPL</span>
+            </div>
+          </div>
+
+          <!-- Pré-visualização Dinâmica dos Cálculos em Tempo Real -->
+          <div class="live-calc-card" id="live-calc-card">
+            <div class="live-calc-item">
+              <span class="live-calc-label">Litros GPL Calculados:</span>
+              <span class="live-calc-value" id="calc-preview-liters">0,0 L</span>
+            </div>
+            <div class="live-calc-item">
+              <span class="live-calc-label">Consumo GPL:</span>
+              <span class="live-calc-value" id="calc-preview-consumption">0,0 L/100km</span>
+            </div>
+            <div class="live-calc-item">
+              <span class="live-calc-label">Consumo Gasolina Eq.:</span>
+              <span class="live-calc-value" id="calc-preview-equiv">0,0 L/100km</span>
+            </div>
+            <div class="live-calc-item">
+              <span class="live-calc-label">Poupança Prevista:</span>
+              <span class="live-calc-value live-calc-savings" id="calc-preview-savings">0,00 €</span>
+            </div>
+          </div>
+
+          <!-- Notas Opcionais -->
+          <div class="form-group">
+            <label class="form-label" for="form-notes">Notas / Observações <small style="color: var(--text-muted);">(opcional)</small></label>
+            <input type="text" class="form-input" id="form-notes" placeholder="Ex: Viagem em autoestrada">
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btn-cancel-refueling">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="btn-save-refueling">Guardar Abastecimento</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: Definições do Veículo e Conversão -->
+  <!-- MODAL: Definições do Veículo e Investimento -->
+  <div class="modal-overlay" id="modal-settings">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Definições do Veículo & Conversão</h3>
+        <h3 class="modal-title">Definições do Veículo & Investimento</h3>
+        <button class="btn-icon" id="btn-close-settings" style="font-size: 1.2rem;">&times;</button>
+      </div>
+
+      <form id="settings-form">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label" for="set-cost">Custo da Conversão para GPL (€) *</label>
+            <label class="form-label" for="set-cost">Custo do Investimento (€) *</label>
+            <input type="number" step="1" class="form-input" id="set-cost" required>
+            <span style="font-size: 0.72rem; color: var(--text-muted);">Valor total do investimento da instalação GPL</span>
+            <span style="font-size: 0.72rem; color: var(--text-muted);">Valor total do investimento a amortizar / recuperar</span>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="set-date">Data da Conversão</label>
+              <label class="form-label" for="set-date">Data da Conversão / Início</label>
+              <input type="date" class="form-input" id="set-date">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="set-odometer">Quilometragem na Conversão (km)</label>
+              <input type="number" class="form-input" id="set-odometer" placeholder="0">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="set-make">Marca</label>
+              <input type="text" class="form-input" id="set-make" placeholder="Ex: Renault, Dacia">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="set-model">Modelo</label>
+              <input type="text" class="form-input" id="set-model" placeholder="Ex: Clio, Duster">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="set-engine">Motorização</label>
+              <input type="text" class="form-input" id="set-engine" placeholder="Ex: 0.9 TCe, 1.2 16V">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="set-petrol-ref">Consumo Referência Gasolina (L/100km)</label>
+              <input type="number" step="0.1" class="form-input" id="set-petrol-ref" placeholder="7.0">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="set-lpg-increase" style="color: var(--color-petrol); font-weight: 700;">
+              Aumento de consumo em GPL (%) *
+            </label>
+            <input type="number" step="0.5" class="form-input" id="set-lpg-increase" required>
+            <span style="font-size: 0.72rem; color: var(--text-muted);">
+              Percentagem média pela qual o GPL consome a mais que a gasolina (típico: 20%).<br>
+              Fórmula exata: <code>consumo_gasolina = consumo_gpl / (1 + aumento / 100)</code>
+            </span>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btn-cancel-settings">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar Definições</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
+

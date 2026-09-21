@@ -1,0 +1,32 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Pytest / Testing / Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local databases and runtime files in ./data/
+# Note: gpl_tracker/data/stations_seed.json is tracked as part of the app codebase
+data/*.db
+data/*.db-journal
+data/*.db-wal
+data/*.db-shm
+!data/.gitkeep
+
+# Environments
+.env
+.venv/
+env/
+venv/
+ENV/
+
+# IDEs and Editors
+.vscode/
+.idea/
+
+# Operating System
+.DS_Store
+Thumbs.db

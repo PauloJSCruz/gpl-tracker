@@ -1,0 +1,16 @@
+services:
+  gpl-tracker:
+    build: .
+    image: gpl-tracker:latest
+    container_name: gpl-tracker
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      # Persistent SQLite database storage on the host server
+      - ./data:/app/data
+    environment:
+      - SERVER_HOST=0.0.0.0
+      - SERVER_PORT=8000
+      - DATA_DIR=/app/data
+
