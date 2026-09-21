@@ -14,7 +14,6 @@ async function initApp() {
   await loadHistory();
   await loadMunicipalities();
   await loadQuickStations();
-  checkLastRefueling();
 }
 
 function setupEventListeners() {
@@ -285,39 +284,6 @@ async function loadQuickStations() {
   }
 }
 
-// 5. "+ Abasteci novamente" logic
-async function checkLastRefueling() {
-  try {
-    const res = await fetch("/api/refuelings/last");
-    if (!res.ok) return;
-    lastRefuelingRecord = await res.json();
-    const btnRepeat = document.getElementById("btn-quick-repeat");
-    if (btnRepeat) {
-      if (lastRefuelingRecord) {
-        btnRepeat.style.display = "inline-flex";
-        btnRepeat.title = `Reutilizar posto ${lastRefuelingRecord.station_name}`;
-      } else {
-        btnRepeat.style.display = "none";
-      }
-    }
-  } catch (err) {
-    console.error("Erro ao obter último abastecimento:", err);
-  }
-}
-
-function repeatLastRefueling() {
-  if (!lastRefuelingRecord) return;
-  openRefuelingModal();
-  if (lastRefuelingRecord.station_id) {
-    selectQuickStation(lastRefuelingRecord.station_id);
-  }
-  // Focus directly on distance field for zero-friction entry!
-  setTimeout(() => {
-    document.getElementById("form-distance").focus();
-  }, 100);
-}
-
-// 6. Station Selection and Auto-Filling Prices
 // 6. Station Identification, Selection and Auto-Filling Prices
 let currentSelectedStation = null;
 
@@ -744,7 +710,6 @@ async function saveRefueling(e) {
     await loadDashboard();
     await loadHistory();
     await loadQuickStations();
-    await checkLastRefueling();
   } catch (err) {
     console.error("Erro ao guardar abastecimento:", err);
     alert("Erro de ligação ao servidor.");
@@ -762,7 +727,6 @@ window.duplicateRefueling = async function(id) {
     if (!res.ok) throw new Error("Erro ao duplicar");
     await loadDashboard();
     await loadHistory();
-    await checkLastRefueling();
   } catch (err) {
     console.error("Erro ao duplicar:", err);
     alert("Erro ao duplicar registo.");
@@ -776,7 +740,6 @@ window.deleteRefueling = async function(id) {
     if (!res.ok) throw new Error("Erro ao eliminar");
     await loadDashboard();
     await loadHistory();
-    await checkLastRefueling();
   } catch (err) {
     console.error("Erro ao eliminar:", err);
     alert("Erro ao eliminar registo.");

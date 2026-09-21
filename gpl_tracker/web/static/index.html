@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GPL Tracker - Contador Financeiro & ROI</title>
-  <link rel="stylesheet" href="/static/style.css?v=1.0.3">
+  <link rel="stylesheet" href="/static/style.css?v=1.0.4">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22 fill=%22%2310b981%22><text y=%2226%22 font-size=%2224%22>⛽</text></svg>">
 </head>
 <body>
@@ -25,12 +25,8 @@
         <button class="btn btn-secondary btn-sm" id="btn-export-excel" title="Exportar para Excel (.xlsx)">
           📊 Excel
         </button>
-        <button class="btn btn-secondary btn-sm" id="btn-open-settings" title="Configurações do veículo e conversão">
         <button class="btn btn-secondary btn-sm" id="btn-open-settings" title="Configurações do veículo e investimento">
           ⚙ Definições
-        </button>
-        <button class="btn btn-secondary" id="btn-quick-repeat" title="Reutilizar último posto com preços atuais" style="display:none;">
-          ⚡ + Abasteci novamente
         </button>
         <button class="btn btn-primary" id="btn-open-refueling">
           + Novo abastecimento
@@ -304,12 +300,10 @@
     </div>
   </div>
 
-  <!-- MODAL: Definições do Veículo e Conversão -->
   <!-- MODAL: Definições do Veículo e Investimento -->
   <div class="modal-overlay" id="modal-settings">
     <div class="modal-content">
       <div class="modal-header">
-        <h3 class="modal-title">Definições do Veículo & Conversão</h3>
         <h3 class="modal-title">Definições do Veículo & Investimento</h3>
         <button class="btn-icon" id="btn-close-settings" style="font-size: 1.2rem;">&times;</button>
       </div>
@@ -317,21 +311,18 @@
       <form id="settings-form">
         <div class="modal-body">
           <div class="form-group">
-            <label class="form-label" for="set-cost">Custo da Conversão para GPL (€) *</label>
             <label class="form-label" for="set-cost">Custo do Investimento (€) *</label>
             <input type="number" step="1" class="form-input" id="set-cost" required>
-            <span style="font-size: 0.72rem; color: var(--text-muted);">Valor total do investimento da instalação GPL</span>
             <span style="font-size: 0.72rem; color: var(--text-muted);">Valor total do investimento a amortizar / recuperar</span>
           </div>
 
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label" for="set-date">Data da Conversão</label>
-              <label class="form-label" for="set-date">Data da Conversão / Início</label>
+              <label class="form-label" for="set-date">Data de Início / Conversão</label>
               <input type="date" class="form-input" id="set-date">
             </div>
             <div class="form-group">
-              <label class="form-label" for="set-odometer">Quilometragem na Conversão (km)</label>
+              <label class="form-label" for="set-odometer">Quilometragem Inicial (km)</label>
               <input type="number" class="form-input" id="set-odometer" placeholder="0">
             </div>
           </div>
@@ -378,7 +369,7 @@
     </div>
   </div>
 
-  <script src="/static/app.js?v=1.0.3"></script>
+  <script src="/static/app.js?v=1.0.4"></script>
 </body>
 </html>
 
