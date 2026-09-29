@@ -87,6 +87,7 @@ def init_db(db_path: Path = DB_PATH):
                 date TEXT NOT NULL,
                 odometer INTEGER,
                 distance_km REAL NOT NULL,
+                forgotten_distance_km REAL NOT NULL DEFAULT 0.0,
                 lpg_price REAL NOT NULL,
                 petrol_price REAL NOT NULL,
                 amount_paid REAL NOT NULL,
@@ -102,10 +103,33 @@ def init_db(db_path: Path = DB_PATH):
             )
         """)
 
+        # Migration: ensure forgotten_distance_km exists in existing refuelings table
+        cursor.execute("PRAGMA table_info(refuelings)")
+        refuelings_cols = [col["name"] for col in cursor.fetchall()]
+        if "forgotten_distance_km" not in refuelings_cols:
+            cursor.execute("ALTER TABLE refuelings ADD COLUMN forgotten_distance_km REAL NOT NULL DEFAULT 0.0")
+
+        # 5. Forgotten distance logs table (for late trip resets)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS forgotten_distance_logs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                vehicle_id INTEGER NOT NULL,
+                distance_km REAL NOT NULL,
+                notes TEXT DEFAULT '',
+                created_at TEXT NOT NULL,
+                status TEXT NOT NULL DEFAULT 'pending',
+                applied_refueling_id INTEGER,
+                FOREIGN KEY (vehicle_id) REFERENCES vehicles(id) ON DELETE CASCADE,
+                FOREIGN KEY (applied_refueling_id) REFERENCES refuelings(id) ON DELETE SET NULL
+            )
+        """)
+
         # Create indices for fast querying and history
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_refuelings_date ON refuelings(date ASC)")
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_stations_favorite ON fuel_stations(is_favorite, use_count DESC)")
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_stations_external ON fuel_stations(external_id)")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_forgotten_pending ON forgotten_distance_logs(vehicle_id, status)")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_forgotten_applied ON forgotten_distance_logs(applied_refueling_id)")
 
         cursor.execute("SELECT id FROM vehicles LIMIT 1")
         if not cursor.fetchone():

@@ -29,6 +29,8 @@ class ExportService:
                 "Data": r.date,
                 "Posto": r.station_name,
                 "Marca": r.station_brand,
+                "Km Introduzidos": r.entered_distance_km,
+                "Km Esquecidos": r.forgotten_distance_km,
                 "Km Percorridos": r.distance_km,
                 "Odómetro (km)": r.odometer,
                 "Preço GPL (€/L)": r.lpg_price,

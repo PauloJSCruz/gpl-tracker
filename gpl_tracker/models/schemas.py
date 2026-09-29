@@ -66,17 +66,44 @@ class FuelPriceInfo(BaseModel):
     message: str = ""
 
 
+class ForgottenDistanceCreate(BaseModel):
+    distance_km: float = Field(..., gt=0.0, description="Quilómetros percorridos antes de fazer reset ao conta-quilómetros (km)")
+    notes: Optional[str] = Field(default="", description="Notas ou observações (opcional)")
+
+
+class ForgottenDistanceUpdate(BaseModel):
+    distance_km: Optional[float] = Field(None, gt=0.0, description="Quilómetros esquecidos corrigidos (km)")
+    notes: Optional[str] = None
+
+
+class ForgottenDistanceOut(BaseModel):
+    id: int
+    vehicle_id: int
+    distance_km: float
+    notes: Optional[str] = ""
+    created_at: str
+    status: str  # 'pending', 'applied'
+    applied_refueling_id: Optional[int] = None
+
+
+class ForgottenDistanceSummary(BaseModel):
+    pending_total_km: float
+    items: List[ForgottenDistanceOut]
+
+
 class RefuelingCreate(BaseModel):
     station_id: Optional[int] = None
     station_name: Optional[str] = None  # Para permitir posto ad-hoc se necessário
     date: str  # YYYY-MM-DD or YYYY-MM-DDTHH:MM
-    distance_km: float = Field(..., gt=0.0, description="Km percorridos desde o último abastecimento")
+    distance_km: float = Field(..., gt=0.0, description="Km percorridos introduzidos pelo utilizador (odómetro parcial)")
     amount_paid: float = Field(..., gt=0.0, description="Valor pago pelo abastecimento em GPL (€)")
     lpg_price: float = Field(..., gt=0.0, description="Preço do GPL (€/L)")
     petrol_price: float = Field(..., gt=0.0, description="Preço de referência da gasolina 95 (€/L)")
     odometer: Optional[int] = None
     data_source: str = "api"  # 'api', 'cache', 'user'
     notes: Optional[str] = ""
+    apply_forgotten_km: bool = True  # Aplicar km esquecidos pendentes automaticamente
+    custom_forgotten_km: Optional[float] = None  # Permite indicar km esquecidos no próprio formulário
 
 
 class RefuelingUpdate(BaseModel):
@@ -89,6 +116,7 @@ class RefuelingUpdate(BaseModel):
     odometer: Optional[int] = None
     data_source: Optional[str] = None
     notes: Optional[str] = None
+    forgotten_distance_km: Optional[float] = None
 
 
 class RefuelingOut(BaseModel):
@@ -99,7 +127,9 @@ class RefuelingOut(BaseModel):
     station_brand: str = ""
     date: str
     odometer: Optional[int] = None
-    distance_km: float
+    distance_km: float  # Distância efetiva total usada nos cálculos
+    entered_distance_km: float  # Distância originalmente introduzida no conta-quilómetros
+    forgotten_distance_km: float = 0.0  # Km esquecidos compensados
     lpg_price: float
     petrol_price: float
     amount_paid: float

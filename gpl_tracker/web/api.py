@@ -10,7 +10,9 @@ from gpl_tracker.models.database import init_db
 from gpl_tracker.models.schemas import (
     VehicleCreate, VehicleOut, StationOut, StationCreate,
     RefuelingCreate, RefuelingUpdate, RefuelingOut,
-    FinancialSummary, FuelPriceInfo
+    FinancialSummary, FuelPriceInfo,
+    ForgottenDistanceCreate, ForgottenDistanceUpdate,
+    ForgottenDistanceOut, ForgottenDistanceSummary
 )
 from gpl_tracker.services.vehicle_service import VehicleService
 from gpl_tracker.services.station_service import StationService
@@ -204,6 +206,47 @@ def duplicate_refueling(refueling_id: int):
     if not dup:
         raise HTTPException(status_code=404, detail="Registo não encontrado.")
     return dup
+
+
+# --- Forgotten Distance Endpoints (Late Reset Compensation) ---
+
+@app.get("/api/forgotten-km", response_model=ForgottenDistanceSummary)
+def get_forgotten_distance_summary():
+    """Get pending forgotten distance summary and list of pending records."""
+    return refueling_service.forgotten_service.get_pending_summary(vehicle_id=1)
+
+
+@app.post("/api/forgotten-km", response_model=ForgottenDistanceOut)
+def create_forgotten_distance(data: ForgottenDistanceCreate):
+    """Register forgotten kilometers from a late odometer reset."""
+    try:
+        return refueling_service.forgotten_service.add_forgotten_distance(data, vehicle_id=1)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.put("/api/forgotten-km/{record_id}", response_model=ForgottenDistanceOut)
+def update_forgotten_distance(record_id: int, data: ForgottenDistanceUpdate):
+    """Update a pending forgotten distance record."""
+    try:
+        rec = refueling_service.forgotten_service.update_record(record_id, data)
+        if not rec:
+            raise HTTPException(status_code=404, detail="Registo não encontrado.")
+        return rec
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.delete("/api/forgotten-km/{record_id}")
+def delete_forgotten_distance(record_id: int):
+    """Delete a pending forgotten distance record."""
+    try:
+        success = refueling_service.forgotten_service.delete_record(record_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Registo não encontrado.")
+        return {"status": "deleted", "id": record_id}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 # --- Dashboard & Financial Summary ---

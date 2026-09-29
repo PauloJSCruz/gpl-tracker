@@ -14,6 +14,7 @@ from gpl_tracker.models.schemas import (
 from gpl_tracker.calculations.engine import calculate_refueling, calculate_financial_summary
 from gpl_tracker.services.vehicle_service import VehicleService
 from gpl_tracker.services.station_service import StationService
+from gpl_tracker.services.forgotten_distance_service import ForgottenDistanceService
 
 
 class RefuelingService:
@@ -23,6 +24,7 @@ class RefuelingService:
         self.db_path = db_path
         self.vehicle_service = VehicleService(db_path=db_path)
         self.station_service = StationService(db_path=db_path)
+        self.forgotten_service = ForgottenDistanceService(db_path=db_path)
 
     def add_refueling(self, data: RefuelingCreate, vehicle_id: int = 1) -> RefuelingOut:
         """Create a new refueling record with automatic metric calculations and odometer tracking."""
@@ -45,9 +47,21 @@ class RefuelingService:
                 ))
                 station_id = new_st.id
 
-        # Calculate metrics using engine
+        # Determine forgotten km to apply for late odometer reset compensation
+        forgotten_km = 0.0
+        if data.custom_forgotten_km is not None and data.custom_forgotten_km > 0:
+            forgotten_km = round(data.custom_forgotten_km, 1)
+        elif data.apply_forgotten_km:
+            pending_summary = self.forgotten_service.get_pending_summary(vehicle_id=vehicle_id)
+            forgotten_km = pending_summary.pending_total_km
+
+        # Effective distance used for all calculations: entered km + forgotten km
+        entered_distance_km = round(data.distance_km, 1)
+        effective_distance_km = round(entered_distance_km + forgotten_km, 1)
+
+        # Calculate metrics using engine based on effective distance
         metrics = calculate_refueling(
-            distance_km=data.distance_km,
+            distance_km=effective_distance_km,
             amount_paid=data.amount_paid,
             lpg_price=data.lpg_price,
             petrol_price=data.petrol_price,
@@ -59,25 +73,26 @@ class RefuelingService:
         if odometer is None or odometer <= 0:
             last_odometer = self._get_latest_odometer(vehicle_id=vehicle_id)
             if last_odometer is not None:
-                odometer = int(last_odometer + data.distance_km)
+                odometer = int(last_odometer + effective_distance_km)
             else:
-                odometer = int(vehicle.conversion_odometer + data.distance_km)
+                odometer = int(vehicle.conversion_odometer + effective_distance_km)
 
         with get_connection(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute("""
                 INSERT INTO refuelings (
-                    vehicle_id, station_id, date, odometer, distance_km,
+                    vehicle_id, station_id, date, odometer, distance_km, forgotten_distance_km,
                     lpg_price, petrol_price, amount_paid, lpg_liters,
                     lpg_consumption, equivalent_petrol_consumption,
                     estimated_petrol_cost, savings, data_source, notes
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 vehicle_id,
                 station_id,
                 data.date,
                 odometer,
-                data.distance_km,
+                effective_distance_km,
+                forgotten_km,
                 data.lpg_price,
                 data.petrol_price,
                 data.amount_paid,
@@ -91,6 +106,15 @@ class RefuelingService:
             ))
             new_id = cursor.lastrowid
             conn.commit()
+
+        # Mark applied forgotten km logs
+        if forgotten_km > 0:
+            self.forgotten_service.apply_pending_to_refueling(
+                refueling_id=new_id,
+                vehicle_id=vehicle_id,
+                custom_km=data.custom_forgotten_km,
+                apply_pending=data.apply_forgotten_km
+            )
 
         # Update station usage statistics and price cache
         if station_id:
@@ -125,6 +149,11 @@ class RefuelingService:
         for r in rows:
             sav = float(r["savings"])
             cum_savings += sav
+            keys = r.keys()
+            forgotten_km = float(r["forgotten_distance_km"]) if ("forgotten_distance_km" in keys and r["forgotten_distance_km"] is not None) else 0.0
+            dist_km = float(r["distance_km"])
+            entered_km = round(dist_km - forgotten_km, 1)
+
             results.append(RefuelingOut(
                 id=r["id"],
                 vehicle_id=r["vehicle_id"],
@@ -133,7 +162,9 @@ class RefuelingService:
                 station_brand=r["station_brand"] or "",
                 date=r["date"],
                 odometer=r["odometer"],
-                distance_km=float(r["distance_km"]),
+                distance_km=dist_km,
+                entered_distance_km=entered_km,
+                forgotten_distance_km=forgotten_km,
                 lpg_price=float(r["lpg_price"]),
                 petrol_price=float(r["petrol_price"]),
                 amount_paid=float(r["amount_paid"]),
@@ -174,6 +205,11 @@ class RefuelingService:
             cum_row = cursor.fetchone()
             cum_sav = float(cum_row["cum"]) if cum_row and cum_row["cum"] is not None else float(r["savings"])
 
+            keys = r.keys()
+            forgotten_km = float(r["forgotten_distance_km"]) if ("forgotten_distance_km" in keys and r["forgotten_distance_km"] is not None) else 0.0
+            dist_km = float(r["distance_km"])
+            entered_km = round(dist_km - forgotten_km, 1)
+
             return RefuelingOut(
                 id=r["id"],
                 vehicle_id=r["vehicle_id"],
@@ -182,7 +218,9 @@ class RefuelingService:
                 station_brand=r["station_brand"] or "",
                 date=r["date"],
                 odometer=r["odometer"],
-                distance_km=float(r["distance_km"]),
+                distance_km=dist_km,
+                entered_distance_km=entered_km,
+                forgotten_distance_km=forgotten_km,
                 lpg_price=float(r["lpg_price"]),
                 petrol_price=float(r["petrol_price"]),
                 amount_paid=float(r["amount_paid"]),
@@ -206,6 +244,7 @@ class RefuelingService:
         if not vehicle:
             return None
 
+        new_forgotten = data.forgotten_distance_km if data.forgotten_distance_km is not None else current.forgotten_distance_km
         new_dist = data.distance_km if data.distance_km is not None else current.distance_km
         new_paid = data.amount_paid if data.amount_paid is not None else current.amount_paid
         new_lpg = data.lpg_price if data.lpg_price is not None else current.lpg_price
@@ -231,6 +270,7 @@ class RefuelingService:
                     date = ?,
                     odometer = ?,
                     distance_km = ?,
+                    forgotten_distance_km = ?,
                     lpg_price = ?,
                     petrol_price = ?,
                     amount_paid = ?,
@@ -247,6 +287,7 @@ class RefuelingService:
                 new_date,
                 new_odometer,
                 new_dist,
+                new_forgotten,
                 new_lpg,
                 new_petrol,
                 new_paid,
@@ -264,7 +305,10 @@ class RefuelingService:
         return self.get_refueling(refueling_id)
 
     def delete_refueling(self, refueling_id: int) -> bool:
-        """Delete a refueling record."""
+        """Delete a refueling record and return applied forgotten km to pending."""
+        # Release applied forgotten distance logs so they are never lost
+        self.forgotten_service.release_by_refueling(refueling_id)
+
         with get_connection(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute("DELETE FROM refuelings WHERE id = ?", (refueling_id,))
@@ -281,12 +325,13 @@ class RefuelingService:
         create_data = RefuelingCreate(
             station_id=current.station_id,
             date=today_str,
-            distance_km=current.distance_km,
+            distance_km=current.entered_distance_km,
             amount_paid=current.amount_paid,
             lpg_price=current.lpg_price,
             petrol_price=current.petrol_price,
             data_source=current.data_source,
-            notes=f"Cópia do abastecimento #{current.id}"
+            notes=f"Cópia do abastecimento #{current.id}",
+            apply_forgotten_km=False
         )
         return self.add_refueling(create_data, vehicle_id=current.vehicle_id)
 
