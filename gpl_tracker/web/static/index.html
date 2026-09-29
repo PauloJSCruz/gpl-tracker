@@ -2,189 +2,144 @@
 <html lang="pt">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GPL Tracker • Inteligência Financeira & ROI de Conversão</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>GPL Tracker • Controlo Financeiro & ROI</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/style.css?v=2.0.0">
+  <link rel="stylesheet" href="/static/style.css?v=2.1.0">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22 fill=%22%2310b981%22><text y=%2226%22 font-size=%2224%22>⛽</text></svg>">
 </head>
 <body>
-  <!-- Ambient Glow Effects -->
+  <!-- Ambient Subtle Background Glow -->
   <div class="ambient-glow glow-top"></div>
   <div class="ambient-glow glow-right"></div>
 
   <div class="container">
-    <!-- Header -->
+    <!-- Header: Compact & Ergonomic -->
     <header class="app-header">
       <div class="brand">
         <div class="brand-icon-wrapper">
-          <div class="brand-icon">
-            <span>€</span>
-          </div>
-          <div class="brand-pulse"></div>
+          <span class="brand-icon">⛽</span>
         </div>
         <div class="brand-title">
           <div class="brand-logo-row">
             <h1>GPL Tracker</h1>
-            <span class="version-tag">PRO</span>
           </div>
-          <p id="vehicle-sub-header">A carregar perfil do veículo...</p>
+          <p id="vehicle-sub-header">A carregar...</p>
         </div>
       </div>
 
       <div class="header-actions">
-        <button class="btn btn-glass btn-sm" id="btn-export-csv" title="Exportar histórico para formato CSV">
-          <span class="btn-icon-symbol">📥</span> CSV
-        </button>
-        <button class="btn btn-glass btn-sm" id="btn-export-excel" title="Exportar relatório completo para Excel (.xlsx)">
-          <span class="btn-icon-symbol">📊</span> Excel
-        </button>
-        <button class="btn btn-glass btn-sm" id="btn-open-settings" title="Definições do veículo, motor e investimento">
-          <span class="btn-icon-symbol">⚙</span> Definições
-        </button>
-        <button class="btn btn-glass btn-sm btn-forgotten-highlight" id="btn-open-forgotten" title="Registar ou gerir quilómetros esquecidos antes do reset ao parcial">
-          <span class="btn-icon-symbol">⏱️</span> Km Esquecidos
-          <span class="badge-counter" id="header-forgotten-badge" style="display: none;">0 km</span>
+        <button class="btn btn-icon-only btn-glass" id="btn-open-settings" title="Definições do veículo" aria-label="Definições">
+          ⚙
         </button>
         <button class="btn btn-primary" id="btn-open-refueling">
-          <span class="btn-icon-symbol">+</span> Novo abastecimento
+          <span class="btn-plus">+</span> Abastecer
         </button>
       </div>
     </header>
 
-    <!-- Banner: Km Esquecidos Pendentes (Exibido apenas quando existem pendentes) -->
-    <section class="pending-km-banner" id="pending-km-banner" style="display: none;">
-      <div class="pending-km-info">
-        <div class="pending-km-icon">
-          <span>⏱️</span>
-        </div>
-        <div>
-          <div class="pending-km-title">
-            <span class="pending-km-label">Compensação Pendente:</span>
-            <span class="pending-km-highlight" id="banner-pending-km-text">0,0 km esquecidos</span>
-          </div>
-          <div class="pending-km-desc">
-            Estes quilómetros foram percorridos antes do reset ao parcial e serão somados automaticamente ao próximo abastecimento para garantir o cálculo exato do consumo real.
-          </div>
-        </div>
-      </div>
-      <div class="pending-km-actions">
-        <button type="button" class="btn btn-glass btn-sm" id="btn-banner-manage-forgotten">Gerir / Editar</button>
-        <button type="button" class="btn btn-primary btn-sm" id="btn-banner-refuel-now">+ Abastecer agora</button>
-      </div>
-    </section>
-
-    <!-- Break-Even Visual Luxury Hero Card -->
+    <!-- Break-Even Hero Card: Sleek, Modern & Compact -->
     <section class="break-even-card" id="break-even-section">
-      <div class="break-even-bg-accent"></div>
       <div class="break-even-header">
         <div class="break-even-title">
-          <div class="section-icon">📈</div>
-          <div>
-            <h2>Recuperação do Investimento</h2>
-            <span class="sub-label">Amortização da conversão para GPL</span>
+          <span class="card-icon">📈</span>
+          <div class="title-meta">
+            <h2>Amortização do Investimento</h2>
+            <span class="sub-label">Retorno da conversão GPL</span>
           </div>
-          <span class="status-badge" id="be-status-badge">A carregar...</span>
+          <span class="status-badge" id="be-status-badge">...</span>
         </div>
-        <div class="break-even-right-meta">
-          <div class="be-percent-display" id="be-main-text">0%</div>
-          <span class="be-percent-sub">amortizado até hoje</span>
+        <div class="break-even-pct-wrap">
+          <span class="be-percent-display" id="be-main-text">0%</span>
+          <span class="be-percent-sub">recuperado</span>
         </div>
       </div>
 
-      <!-- Barra de Progresso com Glow Neon -->
+      <!-- Slim Neon Progress Track -->
       <div class="progress-container">
         <div class="progress-track">
           <div class="progress-fill" id="be-progress-bar" style="width: 0%;">
             <div class="progress-fill-glow"></div>
-            <div class="progress-pin"></div>
           </div>
         </div>
         <div class="progress-labels">
-          <span class="label-start">0,00 €</span>
-          <span class="label-end" id="be-target-label">1.500,00 € (Investimento Inicial)</span>
+          <span>0 €</span>
+          <span id="be-target-label">Investimento</span>
         </div>
       </div>
 
-      <!-- Grelha de Estatísticas de Amortização -->
+      <!-- 2x2 on Mobile / 4 inline on Desktop -->
       <div class="break-even-stats">
         <div class="be-stat-item">
-          <span class="be-stat-label">Poupança Acumulada</span>
+          <span class="be-stat-label">Poupado</span>
           <span class="be-stat-value green" id="be-stat-savings">0,00 €</span>
-          <span class="be-stat-hint">Valor real poupado</span>
         </div>
         <div class="be-stat-item">
-          <span class="be-stat-label" id="be-stat-remaining-label">Falta Recuperar</span>
+          <span class="be-stat-label" id="be-stat-remaining-label">Falta</span>
           <span class="be-stat-value" id="be-stat-remaining">0,00 €</span>
-          <span class="be-stat-hint" id="be-stat-remaining-sub">Para atingir o break-even</span>
         </div>
         <div class="be-stat-item">
-          <span class="be-stat-label">Distância Restante</span>
+          <span class="be-stat-label">Km Restantes</span>
           <span class="be-stat-value" id="be-stat-km-left">--</span>
-          <span class="be-stat-hint">Com base na poupança/km</span>
         </div>
         <div class="be-stat-item">
-          <span class="be-stat-label">Tempo Restante (Est.)</span>
+          <span class="be-stat-label">Tempo Restante</span>
           <span class="be-stat-value" id="be-stat-time-left">--</span>
-          <span class="be-stat-hint">Ao ritmo atual de condução</span>
         </div>
       </div>
     </section>
 
-    <!-- Metrics Cards Grid -->
+    <!-- Key Metrics Grid: 2x2 on Mobile / 4 on Desktop -->
     <section class="metrics-grid">
       <div class="metric-card highlight">
-        <div class="metric-glass-reflection"></div>
         <div class="metric-header">
           <span class="metric-header-text">Poupança Total</span>
-          <span class="metric-icon-box green">💰</span>
+          <span class="metric-dot green"></span>
         </div>
         <div class="metric-value green" id="metric-total-savings">0,00 €</div>
-        <div class="metric-sub" id="metric-lpg-spent">Gasto em GPL: 0,00 €</div>
+        <div class="metric-sub" id="metric-lpg-spent">Gasto: 0,00 €</div>
       </div>
 
       <div class="metric-card">
-        <div class="metric-glass-reflection"></div>
         <div class="metric-header">
           <span class="metric-header-text">Poupança Média</span>
-          <span class="metric-icon-box amber">⚡</span>
+          <span class="metric-dot amber"></span>
         </div>
         <div class="metric-value" id="metric-avg-savings-km">0,000 €/km</div>
-        <div class="metric-sub" id="metric-avg-savings-100km">0,00 € a cada 100 km</div>
+        <div class="metric-sub" id="metric-avg-savings-100km">0,00 € / 100km</div>
       </div>
 
       <div class="metric-card">
-        <div class="metric-glass-reflection"></div>
         <div class="metric-header">
-          <span class="metric-header-text">Km Percorridos em GPL</span>
-          <span class="metric-icon-box blue">🚗</span>
+          <span class="metric-header-text">Distância GPL</span>
+          <span class="metric-dot blue"></span>
         </div>
         <div class="metric-value" id="metric-total-km">0 km</div>
-        <div class="metric-sub" id="metric-total-liters">0 L de GPL consumidos</div>
+        <div class="metric-sub" id="metric-total-liters">0 L consumidos</div>
       </div>
 
       <div class="metric-card">
-        <div class="metric-glass-reflection"></div>
         <div class="metric-header">
           <span class="metric-header-text">Consumo Médio</span>
-          <span class="metric-icon-box purple">📊</span>
+          <span class="metric-dot purple"></span>
         </div>
-        <div class="metric-value" id="metric-avg-consumption">0,0 L/100km</div>
-        <div class="metric-sub" id="metric-equiv-consumption">Eq. Gasolina: 0,0 L/100km</div>
+        <div class="metric-value" id="metric-avg-consumption">0,0 L/100</div>
+        <div class="metric-sub" id="metric-equiv-consumption">Eq: 0,0 L/100</div>
       </div>
     </section>
 
-    <!-- History Section -->
+    <!-- Refueling History Section -->
     <section class="history-section">
       <div class="section-header">
         <div class="section-title-wrap">
-          <span class="section-icon">🕒</span>
           <h2 class="section-title">Histórico de Abastecimentos</h2>
+          <span class="badge-count" id="refuelings-count">0</span>
         </div>
-        <div class="history-meta-actions">
-          <span class="badge-count" id="refuelings-count">0 registos</span>
+        <div class="history-export-actions">
+          <button class="btn btn-glass btn-xs" id="btn-export-csv" title="Descarregar CSV">CSV</button>
+          <button class="btn btn-glass btn-xs" id="btn-export-excel" title="Descarregar Excel">Excel</button>
         </div>
       </div>
 
@@ -192,16 +147,16 @@
         <table class="premium-table">
           <thead>
             <tr>
-              <th>Data & Hora</th>
-              <th>Posto & Marca</th>
-              <th>Distância (km)</th>
-              <th>Preço GPL</th>
-              <th>Preço Gasolina</th>
-              <th>Valor Pago</th>
+              <th>Data</th>
+              <th>Posto</th>
+              <th>Distância</th>
+              <th>GPL (€/L)</th>
+              <th>Gas. (€/L)</th>
+              <th>Pago</th>
               <th>Litros</th>
-              <th>Consumo GPL</th>
-              <th>Gasolina Eq.</th>
-              <th>Custo Gasolina</th>
+              <th>Consumo</th>
+              <th>Gas. Eq.</th>
+              <th>Custo Gas.</th>
               <th>Poupança</th>
               <th>Acumulado</th>
               <th>Fonte</th>
@@ -212,8 +167,7 @@
             <tr>
               <td colspan="14" class="empty-state-cell">
                 <div class="empty-state-inner">
-                  <div class="loading-spinner"></div>
-                  <span>A carregar histórico de abastecimentos...</span>
+                  <span>A carregar histórico...</span>
                 </div>
               </td>
             </tr>
@@ -238,7 +192,7 @@
         <div class="modal-body">
           <input type="hidden" id="form-refueling-id">
 
-          <!-- Selected Station Display (Card Exato do Posto) -->
+          <!-- Posto Selecionado -->
           <div id="station-selected-container" style="display: none;">
             <div class="station-selected-box">
               <div class="station-selected-info">
@@ -246,39 +200,37 @@
                   <span class="brand-pill" id="selected-brand-pill">POSTO</span>
                   <span id="selected-station-name">Nome do Posto</span>
                 </div>
-                <div class="station-selected-address" id="selected-station-address">Morada completa</div>
-                <div class="station-selected-sub" id="selected-station-concelho">Concelho • Distrito</div>
+                <div class="station-selected-address" id="selected-station-address">Morada</div>
+                <div class="station-selected-sub" id="selected-station-concelho">Concelho</div>
               </div>
               <div class="station-selected-actions">
-                <button type="button" class="btn-icon-star" id="btn-toggle-fav-selected" title="Marcar/Desmarcar como favorito">★</button>
-                <button type="button" class="btn btn-glass btn-sm" id="btn-change-station">Alterar</button>
+                <button type="button" class="btn-icon-star" id="btn-toggle-fav-selected" title="Favorito">★</button>
+                <button type="button" class="btn btn-glass btn-xs" id="btn-change-station">Trocar</button>
               </div>
             </div>
           </div>
 
-          <!-- Station Search & Selection Panel -->
+          <!-- Pesquisa de Posto -->
           <div id="station-picker-container">
-            <!-- Postos Habituais & Favoritos -->
             <div class="quick-stations-wrapper">
-              <span class="quick-stations-title">Postos Habituais & Favoritos</span>
+              <span class="quick-stations-title">Postos Habituais</span>
               <div class="station-chips" id="quick-station-chips">
-                <span class="empty-chips-text">Sem postos frequentes ainda</span>
+                <span class="empty-chips-text">Sem postos habituais</span>
               </div>
             </div>
 
-            <div class="form-group" style="margin-top: 0.75rem;">
-              <label class="form-label" for="form-station-search">Identificar Posto de Abastecimento</label>
+            <div class="form-group" style="margin-top: 0.4rem;">
+              <label class="form-label" for="form-station-search">Selecionar Posto de Abastecimento</label>
               <div class="station-filters-bar">
                 <div class="input-icon-wrapper">
                   <span class="input-icon">🔍</span>
-                  <input type="text" class="form-input has-icon" id="form-station-search" placeholder="Escreva a marca, concelho, localidade ou morada..." autocomplete="off">
+                  <input type="text" class="form-input has-icon" id="form-station-search" placeholder="Pesquisar posto, marca ou localidade..." autocomplete="off">
                 </div>
                 <select class="form-input form-select" id="form-station-concelho">
-                  <option value="">Todos os Concelhos</option>
+                  <option value="">Todos Concelhos</option>
                 </select>
               </div>
 
-              <!-- Live results list with exact stations -->
               <div class="station-results-wrapper" id="station-results-list" style="display: none;"></div>
             </div>
           </div>
@@ -296,11 +248,11 @@
               <label class="form-label" for="form-odometer">
                 Odómetro total (km) <small class="text-muted">(opcional)</small>
               </label>
-              <input type="number" class="form-input" id="form-odometer" placeholder="Ex: 145200">
+              <input type="number" class="form-input font-mono" id="form-odometer" placeholder="Ex: 145000">
             </div>
           </div>
 
-          <!-- Preços (Preenchidos Automaticamente) -->
+          <!-- Preços -->
           <div class="form-row">
             <div class="form-group">
               <div class="form-label-row">
@@ -312,173 +264,98 @@
 
             <div class="form-group">
               <div class="form-label-row">
-                <label class="form-label" for="form-petrol-price">Preço Gasolina 95 (€/L)</label>
+                <label class="form-label" for="form-petrol-price">Gasolina 95 (€/L)</label>
                 <span class="price-source-tag" id="petrol-price-tag"></span>
               </div>
               <input type="number" step="0.001" class="form-input font-mono" id="form-petrol-price" placeholder="1.750" required>
             </div>
           </div>
 
-          <!-- Bloco Informativo Transparente de Km Esquecidos / Reset Tardio -->
-          <div class="forgotten-compensation-box" id="modal-forgotten-box" style="display: none;">
-            <div class="compensation-box-header">
-              <label class="custom-checkbox-label">
-                <input type="checkbox" id="form-apply-forgotten" checked>
-                <span><strong>Compensar Reset Tardio</strong></span>
-              </label>
-              <span class="badge-source api" id="modal-pending-km-badge">+0 km pendentes</span>
-            </div>
-            <div class="compensation-calc-breakdown">
-              <div class="calc-row">
-                <span>Km introduzidos (parcial):</span>
-                <span class="font-mono" id="disp-entered-km">0,0 km</span>
-              </div>
-              <div class="calc-row">
-                <span>Km esquecidos pendentes:</span>
-                <span class="font-mono text-gold" id="disp-forgotten-km">+ 0,0 km</span>
-              </div>
-              <div class="calc-row total-row">
-                <span>Km considerados para o cálculo:</span>
-                <span class="font-mono green-highlight" id="disp-effective-km">0,0 km</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- CAMPOS PRINCIPAIS OBRIGATÓRIOS -->
+          <!-- Campos Obrigatórios: Distância & Valor Pago -->
           <div class="form-row">
             <div class="form-group">
               <label class="form-label highlight-label" for="form-distance">
-                Km introduzidos (conta-quilómetros) *
+                Km no conta-quilómetros *
               </label>
-              <input type="number" step="0.1" class="form-input font-mono input-lg" id="form-distance" placeholder="Ex: 400" required autofocus>
-              <span class="form-helper-text" id="form-distance-help">Quilómetros registados no odómetro parcial</span>
+              <input type="number" step="0.1" class="form-input font-mono" id="form-distance" placeholder="Ex: 400" required autofocus>
 
-              <!-- Opção para registar km esquecidos inline se não houver pendentes prévios -->
-              <div id="inline-forgotten-wrapper" style="margin-top: 0.5rem;">
-                <button type="button" class="link-btn" id="btn-toggle-inline-forgotten">
-                  ⏱️ Esqueceu-se de fazer reset após abastecer? (+ adicionar km esquecidos)
+              <!-- Reset tardio dissimulado (subtle accordion) -->
+              <div class="forgotten-subtle-wrap" id="inline-forgotten-wrapper">
+                <button type="button" class="subtle-link" id="btn-toggle-inline-forgotten">
+                  ⏱️ Reset tardio do parcial?
                 </button>
                 <div id="inline-forgotten-input-container" style="display: none;">
-                  <div class="inline-box-title">
-                    Km percorridos antes de ter feito reset ao parcial:
-                  </div>
                   <div class="inline-box-row">
-                    <input type="number" step="0.1" min="0" class="form-input font-mono" id="form-custom-forgotten-km" placeholder="Ex: 50">
-                    <span class="text-muted" style="font-size: 0.75rem;">Serão somados aos km introduzidos</span>
+                    <input type="number" step="0.1" min="0" class="form-input font-mono form-input-sm" id="form-custom-forgotten-km" placeholder="Km percorridos antes do reset">
                   </div>
+                  <span class="text-muted" style="font-size: 0.72rem; display: block; margin-top: 0.25rem;">
+                    Somados aos km do parcial para cálculo do consumo real.
+                  </span>
+                </div>
+              </div>
+
+              <!-- Indicação discreta de compensação pendente pré-existente -->
+              <div class="forgotten-subtle-notice" id="modal-forgotten-box" style="display: none;">
+                <label class="subtle-check-label">
+                  <input type="checkbox" id="form-apply-forgotten" checked>
+                  <span>Compensar <strong id="disp-forgotten-km">0 km</strong> de reset anterior</span>
+                </label>
+                <div class="subtle-calc-preview">
+                  Efetivo: <strong id="disp-effective-km">0 km</strong>
                 </div>
               </div>
             </div>
 
             <div class="form-group">
               <label class="form-label highlight-label" for="form-amount">
-                Valor pago (€) *
+                Total pago (€) *
               </label>
-              <input type="number" step="0.01" class="form-input font-mono input-lg" id="form-amount" placeholder="Ex: 34.00" required>
-              <span class="form-helper-text">Total da fatura em GPL</span>
+              <input type="number" step="0.01" class="form-input font-mono" id="form-amount" placeholder="Ex: 34.00" required>
+              <span class="form-helper-text">Valor total faturado</span>
             </div>
           </div>
 
-          <!-- Pré-visualização Dinâmica dos Cálculos em Tempo Real -->
+          <!-- Pré-visualização Dinâmica Compacta -->
           <div class="live-calc-card" id="live-calc-card">
             <div class="live-calc-item">
-              <span class="live-calc-label">Litros GPL Calculados:</span>
+              <span class="live-calc-label">Litros</span>
               <span class="live-calc-value font-mono" id="calc-preview-liters">0,0 L</span>
             </div>
             <div class="live-calc-item">
-              <span class="live-calc-label">Consumo GPL:</span>
-              <span class="live-calc-value font-mono" id="calc-preview-consumption">0,0 L/100km</span>
+              <span class="live-calc-label">Consumo GPL</span>
+              <span class="live-calc-value font-mono" id="calc-preview-consumption">0,0 L/100</span>
             </div>
             <div class="live-calc-item">
-              <span class="live-calc-label">Consumo Gasolina Eq.:</span>
-              <span class="live-calc-value font-mono" id="calc-preview-equiv">0,0 L/100km</span>
+              <span class="live-calc-label">Consumo Gas. Eq.</span>
+              <span class="live-calc-value font-mono" id="calc-preview-equiv">0,0 L/100</span>
             </div>
             <div class="live-calc-item">
-              <span class="live-calc-label">Poupança Prevista:</span>
-              <span class="live-calc-value font-mono live-calc-savings" id="calc-preview-savings">0,00 €</span>
+              <span class="live-calc-label">Poupança</span>
+              <span class="live-calc-value font-mono green" id="calc-preview-savings">0,00 €</span>
             </div>
           </div>
 
-          <!-- Notas Opcionais -->
           <div class="form-group">
-            <label class="form-label" for="form-notes">Notas / Observações <small class="text-muted">(opcional)</small></label>
-            <input type="text" class="form-input" id="form-notes" placeholder="Ex: Viagem em autoestrada com ar condicionado">
+            <label class="form-label" for="form-notes">Notas <small class="text-muted">(opcional)</small></label>
+            <input type="text" class="form-input" id="form-notes" placeholder="Observações do percurso ou condução">
           </div>
         </div>
 
         <div class="modal-footer">
-          <button type="button" class="btn btn-glass" id="btn-cancel-refueling">Cancelar</button>
-          <button type="submit" class="btn btn-primary" id="btn-save-refueling">Guardar Abastecimento</button>
+          <button type="button" class="btn btn-glass btn-sm" id="btn-cancel-refueling">Cancelar</button>
+          <button type="submit" class="btn btn-primary btn-sm" id="btn-save-refueling">Guardar</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- MODAL: Gestão de Quilómetros Esquecidos (Reset Tardio) -->
-  <div class="modal-overlay" id="modal-forgotten">
-    <div class="modal-content" style="max-width: 540px;">
-      <div class="modal-header">
-        <div class="modal-title-row">
-          <span class="modal-badge-icon">⏱️</span>
-          <h3 class="modal-title">Quilómetros Esquecidos</h3>
-        </div>
-        <button class="btn-close-modal" id="btn-close-forgotten" title="Fechar">&times;</button>
-      </div>
-
-      <div class="modal-body">
-        <div class="info-callout">
-          <p>
-            Se abasteceu e se esqueceu de fazer reset imediato ao conta-quilómetros parcial, indique os quilómetros que percorreu antes do reset.<br>
-            Estes quilómetros ficam <strong>pendentes</strong> e serão automaticamente somados aos quilómetros do próximo abastecimento.
-          </p>
-        </div>
-
-        <!-- Formulário de adição / edição -->
-        <form id="forgotten-form" class="forgotten-form-box">
-          <input type="hidden" id="form-forgotten-id">
-          <div class="form-row">
-            <div class="form-group" style="flex: 1;">
-              <label class="form-label highlight-label" for="form-forgotten-km">
-                Km esquecidos *
-              </label>
-              <input type="number" step="0.1" min="0.1" class="form-input font-mono" id="form-forgotten-km" placeholder="Ex: 50" required>
-            </div>
-            <div class="form-group" style="flex: 2;">
-              <label class="form-label" for="form-forgotten-notes">
-                Notas / Observações <small class="text-muted">(opcional)</small>
-              </label>
-              <input type="text" class="form-input" id="form-forgotten-notes" placeholder="Ex: Reset na área de serviço da A1">
-            </div>
-          </div>
-          <div class="form-actions-row">
-            <button type="button" class="btn btn-glass btn-sm" id="btn-cancel-edit-forgotten" style="display: none;">Cancelar Edição</button>
-            <button type="submit" class="btn btn-primary btn-sm" id="btn-save-forgotten-entry">+ Registar Km</button>
-          </div>
-        </form>
-
-        <!-- Lista de Registos Pendentes Atuais -->
-        <div class="forgotten-history-section">
-          <div class="forgotten-history-header">
-            <h4>Registos Pendentes Atuais</h4>
-            <span class="badge-source user font-mono" id="forgotten-modal-total-badge">Total: 0 km</span>
-          </div>
-          <div id="forgotten-list-container"></div>
-        </div>
-      </div>
-
-      <div class="modal-footer">
-        <button type="button" class="btn btn-glass" id="btn-close-forgotten-footer">Fechar</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL: Definições do Veículo e Investimento -->
+  <!-- MODAL: Definições do Veículo & Configurações -->
   <div class="modal-overlay" id="modal-settings">
     <div class="modal-content">
       <div class="modal-header">
         <div class="modal-title-row">
           <span class="modal-badge-icon">⚙</span>
-          <h3 class="modal-title">Definições do Veículo & Investimento</h3>
+          <h3 class="modal-title">Definições do Veículo</h3>
         </div>
         <button class="btn-close-modal" id="btn-close-settings" title="Fechar">&times;</button>
       </div>
@@ -486,18 +363,18 @@
       <form id="settings-form">
         <div class="modal-body">
           <div class="form-group">
-            <label class="form-label highlight-label" for="set-cost">Custo da Conversão para GPL (€) *</label>
-            <input type="number" step="1" class="form-input font-mono input-lg" id="set-cost" required>
-            <span class="form-helper-text">Valor total do investimento a amortizar / recuperar</span>
+            <label class="form-label highlight-label" for="set-cost">Custo da Conversão GPL (€) *</label>
+            <input type="number" step="1" class="form-input font-mono" id="set-cost" required>
+            <span class="form-helper-text">Valor a amortizar na barra de progresso</span>
           </div>
 
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label" for="set-date">Data de Conversão / Início</label>
+              <label class="form-label" for="set-date">Data de Conversão</label>
               <input type="date" class="form-input" id="set-date">
             </div>
             <div class="form-group">
-              <label class="form-label" for="set-odometer">Quilometragem no Momento da Conversão (km)</label>
+              <label class="form-label" for="set-odometer">Odómetro na Conversão (km)</label>
               <input type="number" class="form-input font-mono" id="set-odometer" placeholder="0">
             </div>
           </div>
@@ -505,45 +382,100 @@
           <div class="form-row">
             <div class="form-group">
               <label class="form-label" for="set-make">Marca</label>
-              <input type="text" class="form-input" id="set-make" placeholder="Ex: Renault, Dacia">
+              <input type="text" class="form-input" id="set-make" placeholder="Ex: Renault">
             </div>
             <div class="form-group">
               <label class="form-label" for="set-model">Modelo</label>
-              <input type="text" class="form-input" id="set-model" placeholder="Ex: Clio, Duster">
+              <input type="text" class="form-input" id="set-model" placeholder="Ex: Clio">
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-group">
               <label class="form-label" for="set-engine">Motorização</label>
-              <input type="text" class="form-input" id="set-engine" placeholder="Ex: 0.9 TCe, 1.2 16V">
+              <input type="text" class="form-input" id="set-engine" placeholder="Ex: 0.9 TCe">
             </div>
             <div class="form-group">
-              <label class="form-label" for="set-petrol-ref">Consumo Referência Gasolina (L/100km)</label>
+              <label class="form-label" for="set-petrol-ref">Consumo Ref. Gasolina (L/100)</label>
               <input type="number" step="0.1" class="form-input font-mono" id="set-petrol-ref" placeholder="7.0">
             </div>
           </div>
 
           <div class="form-group">
-            <label class="form-label text-gold" for="set-lpg-increase" style="font-weight: 700;">
-              Aumento de consumo em GPL (%) *
-            </label>
+            <label class="form-label" for="set-lpg-increase">Aumento consumo GPL (%) *</label>
             <input type="number" step="0.5" class="form-input font-mono" id="set-lpg-increase" required>
-            <span class="form-helper-text">
-              Percentagem média pela qual o GPL consome a mais que a gasolina (típico: 20%).<br>
-              Fórmula exata: <code>consumo_gasolina = consumo_gpl / (1 + aumento / 100)</code>
-            </span>
+            <span class="form-helper-text">Sobreconsumo típico de GPL face à gasolina (típico: 20%).</span>
           </div>
+
+          <!-- Secção Colapsável de Km Esquecidos nas Definições -->
+          <details class="settings-collapsible">
+            <summary class="settings-summary">
+              <span>⏱️ Gestão de Reset Tardio (Km Esquecidos)</span>
+            </summary>
+            <div class="settings-collapsible-body">
+              <p style="font-size: 0.76rem; color: var(--text-secondary); margin-bottom: 0.6rem;">
+                Permite registar ou gerir quilómetros percorridos antes do reset ao odómetro parcial.
+              </p>
+              <button type="button" class="btn btn-glass btn-xs" id="btn-open-forgotten">
+                Abrir Gestor de Km Esquecidos
+              </button>
+            </div>
+          </details>
         </div>
 
         <div class="modal-footer">
-          <button type="button" class="btn btn-glass" id="btn-cancel-settings">Cancelar</button>
-          <button type="submit" class="btn btn-primary">Guardar Definições</button>
+          <button type="button" class="btn btn-glass btn-sm" id="btn-cancel-settings">Cancelar</button>
+          <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
         </div>
       </form>
     </div>
   </div>
 
-  <script src="/static/app.js?v=2.0.0"></script>
+  <!-- MODAL: Gestão Secundária de Km Esquecidos (Acedido apenas via Definições) -->
+  <div class="modal-overlay" id="modal-forgotten">
+    <div class="modal-content" style="max-width: 440px;">
+      <div class="modal-header">
+        <div class="modal-title-row">
+          <span class="modal-badge-icon">⏱️</span>
+          <h3 class="modal-title">Registo de Reset Tardio</h3>
+        </div>
+        <button class="btn-close-modal" id="btn-close-forgotten" title="Fechar">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <form id="forgotten-form" class="forgotten-form-box">
+          <input type="hidden" id="form-forgotten-id">
+          <div class="form-row">
+            <div class="form-group" style="flex: 1;">
+              <label class="form-label" for="form-forgotten-km">Km esquecidos *</label>
+              <input type="number" step="0.1" min="0.1" class="form-input font-mono" id="form-forgotten-km" placeholder="Ex: 50" required>
+            </div>
+            <div class="form-group" style="flex: 2;">
+              <label class="form-label" for="form-forgotten-notes">Notas <small class="text-muted">(opcional)</small></label>
+              <input type="text" class="form-input" id="form-forgotten-notes" placeholder="Ex: Reset na A1">
+            </div>
+          </div>
+          <div class="form-actions-row">
+            <button type="button" class="btn btn-glass btn-xs" id="btn-cancel-edit-forgotten" style="display: none;">Cancelar</button>
+            <button type="submit" class="btn btn-primary btn-xs" id="btn-save-forgotten-entry">+ Registar</button>
+          </div>
+        </form>
+
+        <div class="forgotten-history-section">
+          <div class="forgotten-history-header">
+            <h4>Pendentes</h4>
+            <span class="badge-source font-mono" id="forgotten-modal-total-badge">Total: 0 km</span>
+          </div>
+          <div id="forgotten-list-container"></div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-glass btn-sm" id="btn-close-forgotten-footer">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js?v=2.1.0"></script>
 </body>
 </html>

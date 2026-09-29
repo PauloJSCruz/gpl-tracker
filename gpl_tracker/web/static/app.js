@@ -1,4 +1,4 @@
-// GPL Tracker - Frontend Application Logic (PRO Edition)
+// GPL Tracker - Frontend Application Logic (PRO Compact Edition)
 let currentVehicle = null;
 let lastRefuelingRecord = null;
 let allQuickStations = [];
@@ -24,8 +24,6 @@ function setupEventListeners() {
   document.getElementById("btn-open-refueling")?.addEventListener("click", () => openRefuelingModal());
   document.getElementById("btn-open-settings")?.addEventListener("click", () => openSettingsModal());
   document.getElementById("btn-open-forgotten")?.addEventListener("click", () => openForgottenModal());
-  document.getElementById("btn-banner-manage-forgotten")?.addEventListener("click", () => openForgottenModal());
-  document.getElementById("btn-banner-refuel-now")?.addEventListener("click", () => openRefuelingModal());
 
   // Modal closers
   document.getElementById("btn-close-modal")?.addEventListener("click", closeRefuelingModal);
@@ -46,9 +44,7 @@ function setupEventListeners() {
     if (e.target.id === "modal-forgotten") closeForgottenModal();
   });
 
-  // Forgotten km form and controls
-  document.getElementById("forgotten-form")?.addEventListener("submit", saveForgottenEntry);
-  document.getElementById("btn-cancel-edit-forgotten")?.addEventListener("click", cancelEditForgotten);
+  // Dissimulated forgotten km toggle in refueling modal
   document.getElementById("btn-toggle-inline-forgotten")?.addEventListener("click", () => {
     const cont = document.getElementById("inline-forgotten-input-container");
     if (!cont) return;
@@ -64,6 +60,10 @@ function setupEventListeners() {
   });
 
   document.getElementById("form-apply-forgotten")?.addEventListener("change", updateLiveCalculations);
+
+  // Secondary forgotten km form
+  document.getElementById("forgotten-form")?.addEventListener("submit", saveForgottenEntry);
+  document.getElementById("btn-cancel-edit-forgotten")?.addEventListener("click", cancelEditForgotten);
 
   // Station search and picker
   let searchDebounceTimer = null;
@@ -122,7 +122,7 @@ async function loadVehicle() {
     const subHeaderEl = document.getElementById("vehicle-sub-header");
     if (subHeaderEl) {
       subHeaderEl.textContent =
-        `${nameStr} • Investimento: ${formatCurrency(currentVehicle.conversion_cost)} (+${currentVehicle.lpg_consumption_increase}% consumo GPL)`;
+        `${nameStr} • Investimento: ${formatCurrency(currentVehicle.conversion_cost)} (+${currentVehicle.lpg_consumption_increase}% GPL)`;
     }
 
     // Populate settings form
@@ -148,20 +148,20 @@ async function loadDashboard() {
 
     // Primary Metric Cards
     document.getElementById("metric-total-savings").textContent = formatCurrency(summary.total_savings);
-    document.getElementById("metric-lpg-spent").textContent = `Gasto em GPL: ${formatCurrency(summary.total_lpg_spent)}`;
+    document.getElementById("metric-lpg-spent").textContent = `Gasto: ${formatCurrency(summary.total_lpg_spent)}`;
 
     document.getElementById("metric-avg-savings-km").textContent = `${formatNumber(summary.avg_savings_per_km, 3)} €/km`;
-    document.getElementById("metric-avg-savings-100km").textContent = `${formatCurrency(summary.avg_savings_per_100km)} a cada 100 km`;
+    document.getElementById("metric-avg-savings-100km").textContent = `${formatCurrency(summary.avg_savings_per_100km)} / 100km`;
 
-    document.getElementById("metric-total-km").textContent = `${formatNumber(summary.total_distance_km, 1)} km`;
-    document.getElementById("metric-total-liters").textContent = `${formatNumber(summary.total_lpg_liters, 1)} L de GPL consumidos`;
+    document.getElementById("metric-total-km").textContent = `${formatNumber(summary.total_distance_km, 0)} km`;
+    document.getElementById("metric-total-liters").textContent = `${formatNumber(summary.total_lpg_liters, 0)} L consumidos`;
 
-    document.getElementById("metric-avg-consumption").textContent = `${formatNumber(summary.avg_lpg_consumption, 2)} L/100km`;
-    document.getElementById("metric-equiv-consumption").textContent = `Eq. Gasolina: ${formatNumber(summary.avg_petrol_consumption, 2)} L/100km`;
+    document.getElementById("metric-avg-consumption").textContent = `${formatNumber(summary.avg_lpg_consumption, 2)} L/100`;
+    document.getElementById("metric-equiv-consumption").textContent = `Eq: ${formatNumber(summary.avg_petrol_consumption, 2)} L/100`;
 
-    // Break-Even Card
+    // Break-Even Hero Card
     const targetCost = summary.conversion_cost;
-    document.getElementById("be-target-label").textContent = `${formatCurrency(targetCost)} (Investimento Inicial)`;
+    document.getElementById("be-target-label").textContent = formatCurrency(targetCost);
     document.getElementById("be-stat-savings").textContent = formatCurrency(summary.total_savings);
 
     const be = summary.break_even;
@@ -170,40 +170,36 @@ async function loadDashboard() {
     const mainTextEl = document.getElementById("be-main-text");
     const remainingValEl = document.getElementById("be-stat-remaining");
     const remainingLabelEl = document.getElementById("be-stat-remaining-label");
-    const remainingSubEl = document.getElementById("be-stat-remaining-sub");
     const kmLeftEl = document.getElementById("be-stat-km-left");
     const timeLeftEl = document.getElementById("be-stat-time-left");
 
-    // Progress Bar width (max 100%)
     const pct = Math.min(Math.max(summary.recovered_percent, 0), 100);
     progressBarEl.style.width = `${pct}%`;
     mainTextEl.textContent = `${formatNumber(summary.recovered_percent, 1)}%`;
 
     if (summary.is_recovered) {
       badgeEl.className = "status-badge status-recovered";
-      badgeEl.textContent = "Investimento Recuperado";
+      badgeEl.textContent = "Recuperado";
 
       remainingLabelEl.textContent = "Lucro Líquido";
       remainingValEl.textContent = `+${formatCurrency(summary.net_profit)}`;
       remainingValEl.style.color = "var(--emerald-400)";
-      if (remainingSubEl) remainingSubEl.textContent = "Poupança líquida acumulada";
 
-      kmLeftEl.textContent = "0 km (Meta atingida)";
-      timeLeftEl.textContent = "0 meses (Meta atingida)";
+      kmLeftEl.textContent = "0 km (Meta)";
+      timeLeftEl.textContent = "0 meses (Meta)";
     } else {
-      remainingLabelEl.textContent = "Falta Recuperar";
+      remainingLabelEl.textContent = "Falta";
       remainingValEl.textContent = formatCurrency(summary.remaining_amount);
       remainingValEl.style.color = "var(--text-primary)";
-      if (remainingSubEl) remainingSubEl.textContent = "Para atingir o break-even";
 
       if (be.status === "insufficient_data") {
         badgeEl.className = "status-badge status-insufficient";
-        badgeEl.textContent = "Dados Insuficientes";
-        kmLeftEl.textContent = be.remaining_km ? `~${formatNumber(be.remaining_km, 0)} km` : "Dados insuficientes";
-        timeLeftEl.textContent = "Dados insuficientes";
+        badgeEl.textContent = "A iniciar";
+        kmLeftEl.textContent = be.remaining_km ? `~${formatNumber(be.remaining_km, 0)} km` : "--";
+        timeLeftEl.textContent = "--";
       } else {
         badgeEl.className = "status-badge status-recovering";
-        badgeEl.textContent = "Em Recuperação";
+        badgeEl.textContent = "Em curso";
         kmLeftEl.textContent = `~${formatNumber(be.remaining_km, 0)} km`;
         timeLeftEl.textContent = `~${formatNumber(be.remaining_months, 1)} meses`;
       }
@@ -213,37 +209,12 @@ async function loadDashboard() {
   }
 }
 
-// 3. Load Forgotten Distance Data (Reset Tardio)
+// 3. Load Forgotten Distance Data (Dissimulado)
 async function loadForgottenKm() {
   try {
     const res = await fetch("/api/forgotten-km");
     if (!res.ok) throw new Error("Erro ao carregar km esquecidos");
     pendingForgottenData = await res.json();
-    const pendingTotal = pendingForgottenData.pending_total_km || 0.0;
-
-    // Header badge
-    const headerBadge = document.getElementById("header-forgotten-badge");
-    if (headerBadge) {
-      if (pendingTotal > 0) {
-        headerBadge.style.display = "inline-flex";
-        headerBadge.textContent = `+${formatNumber(pendingTotal, 1)} km`;
-      } else {
-        headerBadge.style.display = "none";
-      }
-    }
-
-    // Pending Banner
-    const banner = document.getElementById("pending-km-banner");
-    const bannerText = document.getElementById("banner-pending-km-text");
-    if (banner && bannerText) {
-      if (pendingTotal > 0) {
-        banner.style.display = "flex";
-        bannerText.textContent = `${formatNumber(pendingTotal, 1)} km esquecidos`;
-      } else {
-        banner.style.display = "none";
-      }
-    }
-
     renderForgottenModalList();
   } catch (err) {
     console.error("Erro ao carregar km esquecidos:", err);
@@ -270,7 +241,7 @@ function cancelEditForgotten() {
   const cancelBtn = document.getElementById("btn-cancel-edit-forgotten");
   if (cancelBtn) cancelBtn.style.display = "none";
   const saveBtn = document.getElementById("btn-save-forgotten-entry");
-  if (saveBtn) saveBtn.textContent = "+ Registar Km";
+  if (saveBtn) saveBtn.textContent = "+ Registar";
 }
 
 function renderForgottenModalList() {
@@ -285,22 +256,21 @@ function renderForgottenModalList() {
 
   if (!pendingForgottenData.items || pendingForgottenData.items.length === 0) {
     container.innerHTML = `
-      <div style="text-align: center; padding: 1.5rem 0.5rem; color: var(--text-muted); font-size: 0.85rem;">
-        Nenhum registo pendente no momento.<br>
-        <span style="font-size: 0.78rem;">Registe acima os km percorridos antes do reset ao parcial.</span>
+      <div style="text-align: center; padding: 1rem 0.5rem; color: var(--text-muted); font-size: 0.8rem;">
+        Sem registos pendentes.
       </div>
     `;
     return;
   }
 
   container.innerHTML = pendingForgottenData.items.map(item => {
-    const dateStr = item.created_at ? item.created_at.slice(0, 16).replace("T", " ") : "";
+    const dateStr = item.created_at ? item.created_at.slice(0, 10) : "";
     return `
       <div class="forgotten-item-card">
         <div class="forgotten-item-left">
-          <div class="forgotten-item-km">⏱️ +${formatNumber(item.distance_km, 1)} km</div>
+          <div class="forgotten-item-km">+${formatNumber(item.distance_km, 1)} km</div>
           ${item.notes ? `<div class="forgotten-item-notes">${escapeHtml(item.notes)}</div>` : ""}
-          <div class="forgotten-item-date">Registado em: ${dateStr}</div>
+          <div class="forgotten-item-date">${dateStr}</div>
         </div>
         <div class="forgotten-item-right">
           <button type="button" class="btn-action-icon" title="Editar" onclick="editForgottenItem(${item.id})">✏️</button>
@@ -321,12 +291,12 @@ window.editForgottenItem = function(id) {
   const cancelBtn = document.getElementById("btn-cancel-edit-forgotten");
   if (cancelBtn) cancelBtn.style.display = "inline-block";
   const saveBtn = document.getElementById("btn-save-forgotten-entry");
-  if (saveBtn) saveBtn.textContent = "Atualizar Registo";
+  if (saveBtn) saveBtn.textContent = "Atualizar";
   document.getElementById("form-forgotten-km")?.focus();
 };
 
 window.deleteForgottenItem = async function(id) {
-  if (!confirm("Tem a certeza que deseja eliminar este registo de km esquecidos?")) return;
+  if (!confirm("Eliminar este registo de km esquecidos?")) return;
   try {
     const res = await fetch(`/api/forgotten-km/${id}`, { method: "DELETE" });
     if (!res.ok) throw new Error("Erro ao eliminar");
@@ -344,7 +314,7 @@ async function saveForgottenEntry(e) {
   const notes = document.getElementById("form-forgotten-notes").value;
 
   if (!km || km <= 0) {
-    alert("Por favor indique um valor válido de quilómetros (> 0).");
+    alert("Indique um valor válido (> 0).");
     return;
   }
 
@@ -374,7 +344,7 @@ async function saveForgottenEntry(e) {
     await loadForgottenKm();
   } catch (err) {
     console.error("Erro ao guardar km esquecidos:", err);
-    alert("Erro ao guardar registo de km esquecidos.");
+    alert("Erro ao guardar registo.");
   }
 }
 
@@ -386,18 +356,14 @@ async function loadHistory() {
     const items = await res.json();
 
     const tbody = document.getElementById("refuelings-tbody");
-    document.getElementById("refuelings-count").textContent = `${items.length} ${items.length === 1 ? "registo" : "registos"}`;
+    document.getElementById("refuelings-count").textContent = `${items.length}`;
 
     if (items.length === 0) {
       tbody.innerHTML = `
         <tr>
           <td colspan="14" class="empty-state-cell">
             <div class="empty-state-inner">
-              <span style="font-size: 1.5rem;">⛽</span>
-              <span>Nenhum abastecimento registado até ao momento.</span>
-              <button class="btn btn-primary btn-sm" style="margin-top: 0.5rem;" onclick="openRefuelingModal()">
-                + Registar primeiro abastecimento
-              </button>
+              <span>Nenhum abastecimento registado.</span>
             </div>
           </td>
         </tr>
@@ -426,10 +392,9 @@ async function loadHistory() {
         ? `
           <div class="distance-cell">
             <strong>${formatNumber(item.distance_km, 1)} km</strong>
-            <span class="badge-forgotten-comp" title="Compensação: ${formatNumber(enteredKm, 1)} km introduzidos + ${formatNumber(item.forgotten_distance_km, 1)} km esquecidos">
-              ⏱️ +${formatNumber(item.forgotten_distance_km, 1)} km
+            <span class="badge-forgotten-comp" title="${formatNumber(enteredKm, 1)} km parciais + ${formatNumber(item.forgotten_distance_km, 1)} km esquecidos">
+              +${formatNumber(item.forgotten_distance_km, 1)} km
             </span>
-            <span class="distance-sub">${formatNumber(enteredKm, 1)} km parciais</span>
           </div>
         `
         : `
@@ -452,8 +417,8 @@ async function loadHistory() {
           <td>${formatNumber(item.petrol_price, 3)} €</td>
           <td><strong>${formatCurrency(item.amount_paid)}</strong></td>
           <td>${formatNumber(item.lpg_liters, 2)} L</td>
-          <td>${formatNumber(item.lpg_consumption, 2)} L/100</td>
-          <td>${formatNumber(item.equivalent_petrol_consumption, 2)} L/100</td>
+          <td>${formatNumber(item.lpg_consumption, 2)}</td>
+          <td>${formatNumber(item.equivalent_petrol_consumption, 2)}</td>
           <td>${formatCurrency(item.estimated_petrol_cost)}</td>
           <td class="table-savings">+${formatCurrency(item.savings)}</td>
           <td class="table-cumulative">${formatCurrency(item.cumulative_savings)}</td>
@@ -484,7 +449,7 @@ async function loadQuickStations() {
     if (!container) return;
 
     if (!allQuickStations || allQuickStations.length === 0) {
-      container.innerHTML = `<span style="font-size: 0.78rem; color: var(--text-muted);">Sem postos habituais ainda</span>`;
+      container.innerHTML = `<span style="font-size: 0.74rem; color: var(--text-muted);">Sem postos habituais</span>`;
       return;
     }
 
@@ -511,7 +476,7 @@ async function loadMunicipalities() {
     const munis = await res.json();
     const sel = document.getElementById("form-station-concelho");
     if (!sel) return;
-    sel.innerHTML = `<option value="">Todos os Concelhos (${munis.length})</option>` +
+    sel.innerHTML = `<option value="">Todos os Concelhos</option>` +
       munis.map(m => `<option value="${escapeHtml(m)}">${escapeHtml(m)}</option>`).join("");
   } catch (err) {
     console.error("Erro ao carregar concelhos:", err);
@@ -526,9 +491,6 @@ function getBrandClass(brand) {
   if (b.includes("bp")) return "bp";
   if (b.includes("prio")) return "prio";
   if (b.includes("cepsa")) return "cepsa";
-  if (b.includes("auchan")) return "auchan";
-  if (b.includes("shell")) return "shell";
-  if (b.includes("intermarch")) return "intermarche";
   return "";
 }
 
@@ -606,13 +568,13 @@ async function triggerLiveStationSearch() {
   const listEl = document.getElementById("station-results-list");
 
   listEl.style.display = "block";
-  listEl.innerHTML = `<div style="padding: 1rem; text-align: center; color: var(--text-muted); font-size: 0.85rem;">A pesquisar postos...</div>`;
+  listEl.innerHTML = `<div style="padding: 0.75rem; text-align: center; color: var(--text-muted); font-size: 0.78rem;">A pesquisar...</div>`;
 
   try {
     const params = new URLSearchParams();
     if (q) params.append("q", q);
     if (concelho) params.append("municipality", concelho);
-    params.append("limit", "40");
+    params.append("limit", "30");
 
     const res = await fetch(`/api/stations/search?${params.toString()}`);
     if (!res.ok) throw new Error("Erro na pesquisa");
@@ -620,21 +582,17 @@ async function triggerLiveStationSearch() {
     renderStationSearchResults(stations);
   } catch (err) {
     console.error("Erro ao pesquisar postos:", err);
-    listEl.innerHTML = `<div style="padding: 1rem; text-align: center; color: var(--color-danger); font-size: 0.85rem;">Erro na pesquisa de postos</div>`;
+    listEl.innerHTML = `<div style="padding: 0.75rem; text-align: center; color: var(--rose-400); font-size: 0.78rem;">Erro na pesquisa</div>`;
   }
 }
 
 function renderStationSearchResults(stations) {
   const listEl = document.getElementById("station-results-list");
-  const q = document.getElementById("form-station-search").value.trim();
 
   if (!stations || stations.length === 0) {
     listEl.innerHTML = `
-      <div style="padding: 1.25rem; text-align: center; color: var(--text-muted); font-size: 0.85rem;">
-        Nenhum posto encontrado para esta pesquisa.<br>
-        ${q ? `<button type="button" class="btn btn-secondary btn-sm" style="margin-top: 0.5rem;" onclick="createCustomStationFromSearch('${escapeHtml(q)}')">
-          + Criar posto "${escapeHtml(q)}" manualmente
-        </button>` : ""}
+      <div style="padding: 0.85rem; text-align: center; color: var(--text-muted); font-size: 0.78rem;">
+        Nenhum posto encontrado.
       </div>
     `;
     return;
@@ -642,26 +600,25 @@ function renderStationSearchResults(stations) {
 
   listEl.innerHTML = stations.map(st => {
     const brandClass = getBrandClass(st.brand);
-    const priceText = st.last_lpg_price ? `${formatNumber(st.last_lpg_price, 3)} €/L` : "";
+    const priceText = st.last_lpg_price ? `${formatNumber(st.last_lpg_price, 3)} €` : "";
     const favStar = st.is_favorite ? "★" : "☆";
     const favColor = st.is_favorite ? "color: #f59e0b;" : "color: var(--text-muted);";
     const stJson = JSON.stringify(st).replace(/"/g, '&quot;');
 
     return `
       <div class="station-result-item" onclick="selectStationItem(${stJson})">
-        <div class="station-result-left">
-          <div class="station-result-name">
+        <div>
+          <div>
             <span class="brand-pill ${brandClass}">${escapeHtml(st.brand || "POSTO")}</span>
-            <span>${escapeHtml(st.name)}</span>
+            <strong>${escapeHtml(st.name)}</strong>
           </div>
-          <div class="station-result-address">${escapeHtml(st.address || st.municipality || "")}</div>
-          <div style="font-size: 0.72rem; color: var(--text-muted);">
-            ${escapeHtml(st.municipality || "")} • ${escapeHtml(st.district || "")}
+          <div style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 0.1rem;">
+            ${escapeHtml(st.address || st.municipality || "")}
           </div>
         </div>
-        <div class="station-result-right">
-          <div class="station-result-price">${priceText}</div>
-          <button type="button" class="btn-icon" style="font-size: 1.1rem; ${favColor}" onclick="event.stopPropagation(); toggleStationFavFromList(${st.id})" title="Favorito">
+        <div style="display: flex; align-items: center; gap: 0.35rem;">
+          <span style="font-family: var(--font-mono); font-size: 0.78rem;">${priceText}</span>
+          <button type="button" class="btn-action-icon" style="${favColor}" onclick="event.stopPropagation(); toggleStationFavFromList(${st.id})" title="Favorito">
             ${favStar}
           </button>
         </div>
@@ -677,9 +634,7 @@ async function toggleStationFavFromList(stationId) {
       await loadQuickStations();
       await triggerLiveStationSearch();
     }
-  } catch (err) {
-    console.error("Erro ao alternar favorito:", err);
-  }
+  } catch (err) {}
 }
 
 async function toggleSelectedStationFav() {
@@ -692,31 +647,7 @@ async function toggleSelectedStationFav() {
       renderSelectedStationCard(currentSelectedStation);
       await loadQuickStations();
     }
-  } catch (err) {
-    console.error("Erro ao alternar favorito:", err);
-  }
-}
-
-async function createCustomStationFromSearch(name) {
-  const concelho = document.getElementById("form-station-concelho").value || "";
-  try {
-    const res = await fetch("/api/stations", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: name,
-        brand: "Independente",
-        municipality: concelho,
-        provider: "manual"
-      })
-    });
-    if (res.ok) {
-      const newSt = await res.json();
-      selectStationItem(newSt);
-    }
-  } catch (err) {
-    console.error("Erro ao criar posto:", err);
-  }
+  } catch (err) {}
 }
 
 async function fetchAndSetPrices(stationId) {
@@ -725,8 +656,8 @@ async function fetchAndSetPrices(stationId) {
   const lpgTag = document.getElementById("lpg-price-tag");
   const petrolTag = document.getElementById("petrol-price-tag");
 
-  lpgTag.textContent = "A obter preço...";
-  petrolTag.textContent = "A obter preço...";
+  lpgTag.textContent = "...";
+  petrolTag.textContent = "...";
 
   try {
     const res = await fetch(`/api/stations/${stationId}/prices`);
@@ -742,22 +673,19 @@ async function fetchAndSetPrices(stationId) {
 
     let sourceText = "";
     if (priceInfo.source === "dgeg") {
-      sourceText = `🟢 DGEG (${priceInfo.updated_at || "Hoje"})`;
+      sourceText = `DGEG (${priceInfo.updated_at || "Hoje"})`;
     } else if (priceInfo.source === "cache") {
-      sourceText = `🟡 Cache (${priceInfo.updated_at || "Anterior"})`;
-    } else if (priceInfo.source === "apiaberta") {
-      sourceText = `🔵 Média Nacional`;
+      sourceText = `Cache (${priceInfo.updated_at || "Ant."})`;
     } else {
-      sourceText = `⚪ Manual`;
+      sourceText = `Manual`;
     }
 
     lpgTag.textContent = sourceText;
     petrolTag.textContent = sourceText;
     lpgInput.dataset.source = priceInfo.source;
   } catch (err) {
-    console.error("Erro ao obter preços automáticos:", err);
-    lpgTag.textContent = "⚪ Manual (Sem ligação)";
-    petrolTag.textContent = "⚪ Manual (Sem ligação)";
+    lpgTag.textContent = "Manual";
+    petrolTag.textContent = "Manual";
   }
 }
 
@@ -785,21 +713,11 @@ function updateLiveCalculations() {
 
   const effectiveDist = Math.round((enteredDist + forgottenKm) * 10) / 10;
 
-  // Update transparent breakdown in modal
-  const dispEntered = document.getElementById("disp-entered-km");
+  // Update subtle notice displays
   const dispForgotten = document.getElementById("disp-forgotten-km");
   const dispEffective = document.getElementById("disp-effective-km");
-  const forgottenBox = document.getElementById("modal-forgotten-box");
-
-  if (dispEntered) dispEntered.textContent = `${formatNumber(enteredDist, 1)} km`;
-  if (dispForgotten) dispForgotten.textContent = `+ ${formatNumber(forgottenKm, 1)} km`;
+  if (dispForgotten) dispForgotten.textContent = `${formatNumber(forgottenKm, 1)} km`;
   if (dispEffective) dispEffective.textContent = `${formatNumber(effectiveDist, 1)} km`;
-
-  if (!isEditing && customKm > 0 && forgottenBox) {
-    forgottenBox.style.display = "block";
-    const badge = document.getElementById("modal-pending-km-badge");
-    if (badge) badge.textContent = `+${formatNumber(customKm, 1)} km manuais`;
-  }
 
   const litersEl = document.getElementById("calc-preview-liters");
   const lpgConsEl = document.getElementById("calc-preview-consumption");
@@ -807,24 +725,23 @@ function updateLiveCalculations() {
   const savingsEl = document.getElementById("calc-preview-savings");
 
   if (!effectiveDist || !amount || !lpgPrice || !petrolPrice || effectiveDist <= 0 || amount <= 0 || lpgPrice <= 0 || petrolPrice <= 0) {
-    litersEl.textContent = "0,0 L";
-    lpgConsEl.textContent = "0,0 L/100km";
-    equivConsEl.textContent = "0,0 L/100km";
-    savingsEl.textContent = "0,00 €";
+    if (litersEl) litersEl.textContent = "0,0 L";
+    if (lpgConsEl) lpgConsEl.textContent = "0,0 L/100";
+    if (equivConsEl) equivConsEl.textContent = "0,0 L/100";
+    if (savingsEl) savingsEl.textContent = "0,00 €";
     return;
   }
 
-  // Exact formulas matching Rule #1 & #9 with effective distance
   const liters = amount / lpgPrice;
   const lpgCons = (liters / effectiveDist) * 100.0;
   const equivPetrolCons = lpgCons / (1.0 + (increasePercent / 100.0));
   const estimatedPetrolCost = (effectiveDist / 100.0) * equivPetrolCons * petrolPrice;
   const savings = estimatedPetrolCost - amount;
 
-  litersEl.textContent = `${formatNumber(liters, 2)} L`;
-  lpgConsEl.textContent = `${formatNumber(lpgCons, 2)} L/100km`;
-  equivConsEl.textContent = `${formatNumber(equivPetrolCons, 2)} L/100km`;
-  savingsEl.textContent = `+${formatCurrency(savings)}`;
+  if (litersEl) litersEl.textContent = `${formatNumber(liters, 2)} L`;
+  if (lpgConsEl) lpgConsEl.textContent = `${formatNumber(lpgCons, 2)} L/100`;
+  if (equivConsEl) equivConsEl.textContent = `${formatNumber(equivPetrolCons, 2)} L/100`;
+  if (savingsEl) savingsEl.textContent = `+${formatCurrency(savings)}`;
 }
 
 // 8. Open / Close Refueling Modal
@@ -842,7 +759,6 @@ function openRefuelingModal(refuelingId = null) {
   currentSelectedStation = null;
   editingRefuelingForgottenKm = 0.0;
 
-  // Auto-fill current date & time formatted for datetime-local (YYYY-MM-DDTHH:MM)
   const now = new Date();
   now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
   document.getElementById("form-date").value = now.toISOString().slice(0, 16);
@@ -862,11 +778,9 @@ function openRefuelingModal(refuelingId = null) {
 
     const pendingTotal = pendingForgottenData.pending_total_km || 0.0;
     if (pendingTotal > 0) {
-      if (forgottenBox) forgottenBox.style.display = "block";
+      if (forgottenBox) forgottenBox.style.display = "flex";
       const applyCb = document.getElementById("form-apply-forgotten");
       if (applyCb) applyCb.checked = true;
-      const modalBadge = document.getElementById("modal-pending-km-badge");
-      if (modalBadge) modalBadge.textContent = `+${formatNumber(pendingTotal, 1)} km pendentes`;
       if (inlineWrapper) inlineWrapper.style.display = "none";
     } else {
       if (forgottenBox) forgottenBox.style.display = "none";
@@ -918,9 +832,7 @@ async function loadRefuelingIntoModal(id) {
     const inlineWrapper = document.getElementById("inline-forgotten-wrapper");
 
     if (editingRefuelingForgottenKm > 0) {
-      if (forgottenBox) forgottenBox.style.display = "block";
-      const modalBadge = document.getElementById("modal-pending-km-badge");
-      if (modalBadge) modalBadge.textContent = `+${formatNumber(editingRefuelingForgottenKm, 1)} km compensados`;
+      if (forgottenBox) forgottenBox.style.display = "flex";
       const applyCb = document.getElementById("form-apply-forgotten");
       if (applyCb) applyCb.checked = true;
       if (inlineWrapper) inlineWrapper.style.display = "none";
@@ -962,7 +874,6 @@ async function saveRefueling(e) {
 
   let payload;
   if (id) {
-    // When editing: effective distance = entered distance + editingRefuelingForgottenKm
     const effectiveDist = Math.round((enteredDistance + (editingRefuelingForgottenKm || 0.0)) * 10) / 10;
     payload = {
       station_id: stationId ? parseInt(stationId) : null,
@@ -977,7 +888,6 @@ async function saveRefueling(e) {
       notes: notes
     };
   } else {
-    // When creating new: distance_km is entered distance
     payload = {
       station_id: stationId ? parseInt(stationId) : null,
       station_name: stationName || "Posto Independente",
@@ -1049,7 +959,7 @@ window.deleteRefueling = async function(id) {
   try {
     const res = await fetch(`/api/refuelings/${id}`, { method: "DELETE" });
     if (!res.ok) throw new Error("Erro ao eliminar");
-    await loadForgottenKm(); // If forgotten km was bound, it was restored to pending
+    await loadForgottenKm();
     await loadDashboard();
     await loadHistory();
   } catch (err) {
