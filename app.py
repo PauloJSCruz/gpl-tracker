@@ -32,7 +32,7 @@ def open_browser(url: str, delay: float = 1.2):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="GPL Tracker - Contador Financeiro & ROI de Conversão para GPL")
+    parser = argparse.ArgumentParser(description="GPL Tracker - Contador Financeiro & ROI para GPL")
     parser.add_argument("--host", default=SERVER_HOST, help=f"Endereço IP (por defeito: {SERVER_HOST})")
     parser.add_argument("--port", type=int, default=SERVER_PORT, help=f"Porta HTTP (por defeito: {SERVER_PORT})")
     parser.add_argument("--no-browser", action="store_true", help="Não abrir o navegador automaticamente")
@@ -40,7 +40,7 @@ def main():
 
     url = f"http://{args.host}:{args.port}"
     print("=" * 65)
-    print("  GPL Tracker - Contador Financeiro & ROI de Conversao para GPL")
+    print("  GPL Tracker - Contador Financeiro & ROI para GPL")
     print("=" * 65)
     print(f"  Aplicacao disponivel em: {url}")
     print("  Pressione Ctrl+C para encerrar o servidor.")

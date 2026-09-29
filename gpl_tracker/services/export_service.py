@@ -63,7 +63,7 @@ class ExportService:
 
         df_summary = pd.DataFrame([
             {"Indicador": "Veículo", "Valor": f"{vehicle.make} {vehicle.model} {vehicle.engine}".strip() if vehicle else ""},
-            {"Indicador": "Custo da Conversão", "Valor": f"{summary.conversion_cost:.2f} €"},
+            {"Indicador": "Valor do Investimento", "Valor": f"{summary.conversion_cost:.2f} €"},
             {"Indicador": "Poupança Acumulada", "Valor": f"{summary.total_savings:.2f} €"},
             {"Indicador": "Percentagem Recuperada", "Valor": f"{summary.recovered_percent:.1f} %"},
             {"Indicador": "Falta Recuperar", "Valor": f"{summary.remaining_amount:.2f} €"},

@@ -25,7 +25,7 @@ init_db(DB_PATH)
 
 app = FastAPI(
     title="GPL Tracker",
-    description="Contador Financeiro Inteligente & ROI de Conversão para GPL",
+    description="Contador Financeiro Inteligente & ROI para GPL",
     version="1.0.0"
 )
 

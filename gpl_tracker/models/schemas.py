@@ -7,9 +7,9 @@ class VehicleBase(BaseModel):
     make: str = Field(default="", description="Marca do veículo (ex: Renault, Dacia, Fiat)")
     model: str = Field(default="", description="Modelo do veículo (ex: Clio, Duster, Punto)")
     engine: str = Field(default="", description="Motorização (ex: 0.9 TCe, 1.2 16V)")
-    conversion_cost: float = Field(default=1500.0, ge=0.0, description="Custo da conversão (€)")
-    conversion_date: str = Field(default="", description="Data da conversão (AAAA-MM-DD)")
-    conversion_odometer: int = Field(default=0, ge=0, description="Quilometragem no momento da conversão (km)")
+    conversion_cost: float = Field(default=1500.0, ge=0.0, description="Valor do investimento (€)")
+    conversion_date: str = Field(default="", description="Data de início / aquisição (AAAA-MM-DD)")
+    conversion_odometer: int = Field(default=0, ge=0, description="Quilometragem inicial (km)")
     petrol_consumption: float = Field(default=7.0, ge=0.0, description="Consumo de referência a gasolina (L/100 km)")
     lpg_consumption_increase: float = Field(
         default=20.0,

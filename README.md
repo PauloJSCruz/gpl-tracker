@@ -1,9 +1,9 @@
-# ⛽ GPL Tracker - Contador Financeiro Inteligente & ROI de Conversão para GPL
+# ⛽ GPL Tracker - Contador Financeiro Inteligente & ROI para GPL
 
-Aplicação Python para acompanhar o retorno financeiro do investimento na conversão de um automóvel a gasolina para GPL (Gás de Petróleo Liquefeito), concebida para responder de forma simples, transparente e sem atrito a:
+Aplicação para acompanhar o retorno financeiro do investimento num automóvel a GPL (Gás de Petróleo Liquefeito), concebida para responder de forma simples, transparente e sem atrito a:
 
 * **Quanto dinheiro já poupei com GPL?**
-* **Quanto já recuperei do custo da conversão?**
+* **Quanto já recuperei do valor do investimento?**
 * **Quanto falta recuperar?**
 * **Quantos km faltam aproximadamente para o Break-Even?**
 * **Quanto tempo falta aproximadamente?**
